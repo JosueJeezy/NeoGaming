@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - NeoGaming</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
+</head>
+<body>
+    <div class="auth-page">
+        <div class="auth-left" style="background-image: 
+        linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), 
+        url('/img/mortalkombat2.png');">
+        </div>
+        
+        <div class="auth-right">
+            <div class="auth-container">
+                <h2 class="auth-title">BIENVENIDO DE NUEVO!!</h2>
+                
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label class="form-label">E-mail o username</label>
+                        <input type="email" class="form-input" id="email" name="email" placeholder="E-mail" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Contraseña</label>
+                        <input type="password" class="form-input" id="password" name="password" placeholder="Contraseña" required>
+                        <div style="text-align: center; margin-top: 10px;">
+                            <a href="#" class="forgot-password">¿Olvidaste tu contraseña?</a>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 30px;" id="loginBtn">
+                        INICIAR SESIÓN
+                    </button>
+                </form>
+                
+                <div class="auth-footer">
+                    No tienes cuenta? <a href="register.html">Crea una!!</a>
+                </div>
+                
+                <div id="loginAlert" class="alert" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+</body>
+</html>

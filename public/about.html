@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acerca de - NeoGaming</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="home.html" class="navbar-brand">NeoGaming</a>
+            <ul class="navbar-menu">
+                <li class="navbar-item"><a href="home.html">Inicio</a></li>
+                <li class="navbar-item"><a href="search.html">Búsqueda</a></li>
+                <li class="navbar-item"><a href="products.html">Productos</a></li>
+                <li class="navbar-item"><a href="about.html" class="active">Acerca de</a></li>
+                <li class="navbar-item"><a href="#" id="logoutBtn">Salir</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Hero Section -->
+            <section class="hero fade-in">
+                <h1 class="hero-title">🏢 Acerca de NeoGaming</h1>
+                <p class="hero-subtitle">Tu universo gamer en un solo lugar desde 2020</p>
+            </section>
+
+            <!-- Información de la empresa -->
+            <section class="about-section slide-in-left">
+                <div class="about-content">
+                    <div class="about-text">
+                        <h3>🎮 Nuestra Historia</h3>
+                        <p>
+                            NeoGaming nació en 2020 con la visión de crear la mejor experiencia de compra 
+                            para gamers en México. Comenzamos como una pequeña tienda local en Ciudad Juárez 
+                            y ahora somos una de las plataformas de videojuegos más reconocidas del país.
+                        </p>
+                        <p>
+                            Nos especializamos en ofrecer los últimos lanzamientos, clásicos atemporales, 
+                            hardware gaming de alta calidad y accesorios premium para todas las plataformas.
+                        </p>
+
+                        <h3>🚀 Nuestra Misión</h3>
+                        <p>
+                            Democratizar el acceso a los videojuegos de calidad, brindando una experiencia 
+                            de compra excepcional con precios justos, entrega rápida y soporte técnico 
+                            especializado para toda la comunidad gamer.
+                        </p>
+
+                        <h3>🌟 Valores</h3>
+                        <p>
+                            • <strong>Pasión por el Gaming:</strong> Somos gamers auténticos<br>
+                            • <strong>Calidad Premium:</strong> Solo productos originales<br>
+                            • <strong>Comunidad:</strong> Fomentamos la cultura gamer<br>
+                            • <strong>Innovación:</strong> Siempre a la vanguardia tecnológica
+                        </p>
+                    </div>
+                    
+                    <div style="text-align: center;">
+                        <div style="font-size: 8rem; margin-bottom: 20px;">🎮</div>
+                        <div style="background: var(--background-card); border-radius: 15px; padding: 20px;">
+                            <h3 style="color: var(--primary-color); margin-bottom: 15px;">Estadísticas</h3>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                <div style="text-align: center;">
+                                    <div style="font-size: 2rem; color: var(--primary-color); font-weight: bold;">50K+</div>
+                                    <div style="color: var(--text-gray);">Clientes Felices</div>
+                                </div>
+                                <div style="text-align: center;">
+                                    <div style="font-size: 2rem; color: var(--primary-color); font-weight: bold;">1000+</div>
+                                    <div style="color: var(--text-gray);">Productos</div>
+                                </div>
+                                <div style="text-align: center;">
+                                    <div style="font-size: 2rem; color: var(--primary-color); font-weight: bold;">5⭐</div>
+                                    <div style="color: var(--text-gray);">Calificación</div>
+                                </div>
+                                <div style="text-align: center;">
+                                    <div style="font-size: 2rem; color: var(--primary-color); font-weight: bold;">24/7</div>
+                                    <div style="color: var(--text-gray);">Soporte</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Equipo -->
+            <section class="about-section slide-in-right">
+                <h2 class="section-title">👥 Nuestro Equipo</h2>
+                <div class="categories-grid">
+                    <div class="category-card">
+                        <span class="category-icon">👨‍💼</span>
+                        <h3 class="category-title">Alex Rodriguez</h3>
+                        <p class="category-description">CEO & Fundador</p>
+                        <p style="color: var(--text-gray); font-size: 0.9rem; margin-top: 10px;">
+                            Gamer desde los 90s, experto en la industria con más de 15 años de experiencia.
+                        </p>
+                    </div>
+                    
+                    <div class="category-card">
+                        <span class="category-icon">👩‍💻</span>
+                        <h3 class="category-title">Maria Gonzalez</h3>
+                        <p class="category-description">CTO & Tech Lead</p>
+                        <p style="color: var(--text-gray); font-size: 0.9rem; margin-top: 10px;">
+                            Desarrolladora full-stack especializada en e-commerce y gaming platforms.
+                        </p>
+                    </div>
+                    
+                    <div class="category-card">
+                        <span class="category-icon">👨‍🎮</span>
+                        <h3 class="category-title">Carlos Martinez</h3>
+                        <p class="category-description">Gaming Specialist</p>
+                        <p style="color: var(--text-gray); font-size: 0.9rem; margin-top: 10px;">
+                            Pro gamer y especialista en hardware, curator de nuestro catálogo premium.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Información de contacto -->
+            <section class="about-section slide-in-left">
+                <h2 class="section-title">📞 Información de Contacto</h2>
+                <div class="about-content">
+                    <div class="contact-info">
+                        <div class="contact-item">
+                            <span class="contact-icon">📍</span>
+                            <div>
+                                <strong>Dirección:</strong><br>
+                                Av. Tecnológico 1340<br>
+                                Fracc. Tomás Fernández, CP 32575<br>
+                                Ciudad Juárez, Chihuahua, México
+                            </div>
+                        </div>
+                        
+                        <div class="contact-item">
+                            <span class="contact-icon">📞</span>
+                            <div>
+                                <strong>Teléfono:</strong><br>
+                                +52 (656) 688-3800<br>
+                                Lun-Vie: 9:00 AM - 7:00 PM<br>
+                                Sáb: 10:00 AM - 6:00 PM
+                            </div>
+                        </div>
+                        
+                        <div class="contact-item">
+                            <span class="contact-icon">✉️</span>
+                            <div>
+                                <strong>Email:</strong><br>
+                                info@neogaming.mx<br>
+                                soporte@neogaming.mx<br>
+                                ventas@neogaming.mx
+                            </div>
+                        </div>
+                        
+                        <div class="contact-item">
+                            <span class="contact-icon">🌐</span>
+                            <div>
+                                <strong>Redes Sociales:</strong><br>
+                                @NeoGamingMX (Twitter)<br>
+                                @NeoGaming.Oficial (Instagram)<br>
+                                NeoGaming México (Facebook)
+                            </div>
+                        </div>
+                        
+                        <div class="contact-item">
+                            <span class="contact-icon">💬</span>
+                            <div>
+                                <strong>Soporte 24/7:</strong><br>
+                                Chat en vivo disponible<br>
+                                WhatsApp: +52 656 123-4567<br>
+                                Discord: NeoGaming Community
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 style="color: var(--text-light); margin-bottom: 20px;">💳 Métodos de Pago</h3>
+                        <div style="background: var(--background-card); border-radius: 15px; padding: 20px; margin-bottom: 20px;">
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; text-align: center;">
+                                <div style="color: var(--text-gray);">
+                                    <div style="font-size: 2rem; margin-bottom: 5px;">💳</div>
+                                    <div style="font-size: 0.9rem;">Tarjetas</div>
+                                </div>
+                                <div style="color: var(--text-gray);">
+                                    <div style="font-size: 2rem; margin-bottom: 5px;">🏦</div>
+                                    <div style="font-size: 0.9rem;">Transferencias</div>
+                                </div>
+                                <div style="color: var(--text-gray);">
+                                    <div style="font-size: 2rem; margin-bottom: 5px;">📱</div>
+                                    <div style="font-size: 0.9rem;">PayPal</div>
+                                </div>
+                                <div style="color: var(--text-gray);">
+                                    <div style="font-size: 2rem; margin-bottom: 5px;">💰</div>
+                                    <div style="font-size: 0.9rem;">OXXO</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h3 style="color: var(--text-light); margin-bottom: 20px;">🚚 Envíos</h3>
+                        <div style="background: var(--background-card); border-radius: 15px; padding: 20px;">
+                            <div style="color: var(--text-gray); line-height: 1.6;">
+                                • <strong>Envío Gratis:</strong> Compras mayores a $999 MXN<br>
+                                • <strong>Express:</strong> 1-2 días hábiles<br>
+                                • <strong>Estándar:</strong> 3-5 días hábiles<br>
+                                • <strong>Recolección:</strong> Disponible en tienda
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Mapa de ubicación de la empresa -->
+            <section class="about-section slide-in-right">
+                <h2 class="section-title">🗺️ Nuestra Ubicación</h2>
+                <div class="map-container">
+                    <div id="companyMap"></div>
+                </div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <button onclick="openInMaps()" class="btn btn-primary">
+                        📍 Abrir en Google Maps
+                    </button>
+                    <button onclick="getDirectionsToCompany()" class="btn btn-secondary">
+                        🧭 Cómo llegar
+                    </button>
+                </div>
+            </section>
+
+            <!-- Certificaciones y garantías -->
+            <section class="about-section slide-in-left">
+                <h2 class="section-title">🏆 Certificaciones y Garantías</h2>
+                <div class="categories-grid">
+                    <div class="category-card">
+                        <span class="category-icon">✅</span>
+                        <h3 class="category-title">Productos Originales</h3>
+                        <p class="category-description">100% garantía de autenticidad en todos nuestros productos</p>
+                    </div>
+                    
+                    <div class="category-card">
+                        <span class="category-icon">🔒</span>
+                        <h3 class="category-title">Compra Segura</h3>
+                        <p class="category-description">Certificado SSL y encriptación de datos de máximo nivel</p>
+                    </div>
+                    
+                    <div class="category-card">
+                        <span class="category-icon">↩️</span>
+                        <h3 class="category-title">Devoluciones Fáciles</h3>
+                        <p class="category-description">30 días para devoluciones sin preguntas</p>
+                    </div>
+                    
+                    <div class="category-card">
+                        <span class="category-icon">🛠️</span>
+                        <h3 class="category-title">Soporte Técnico</h3>
+                        <p class="category-description">Asistencia especializada 24/7 para todos tus productos</p>
+                    </div>
+                    
+                    <div class="category-card">
+                        <span class="category-icon">🚀</span>
+                        <h3 class="category-title">Envío Express</h3>
+                        <p class="category-description">Entregas rápidas y seguras en todo México</p>
+                    </div>
+                    
+                    <div class="category-card">
+                        <span class="category-icon">💎</span>
+                        <h3 class="category-title">Programa VIP</h3>
+                        <p class="category-description">Beneficios exclusivos para clientes frecuentes</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Testimonios -->
+            <section class="about-section slide-in-right">
+                <h2 class="section-title">💬 Lo que dicen nuestros clientes</h2>
+                <div class="categories-grid">
+                    <div class="category-card">
+                        <div style="color: var(--primary-color); margin-bottom: 10px;">⭐⭐⭐⭐⭐</div>
+                        <p style="color: var(--text-gray); font-style: italic; margin-bottom: 15px;">
+                            "Excelente servicio, productos originales y entrega súper rápida. 
+                            Mi tienda favorita para comprar videojuegos."
+                        </p>
+                        <div style="color: var(--text-light); font-weight: bold;">- Miguel R.</div>
+                    </div>
+                    
+                    <div class="category-card">
+                        <div style="color: var(--primary-color); margin-bottom: 10px;">⭐⭐⭐⭐⭐</div>
+                        <p style="color: var(--text-gray); font-style: italic; margin-bottom: 15px;">
+                            "Los precios son muy competitivos y el soporte técnico es increíble. 
+                            Me ayudaron a configurar mi PC gaming perfecto."
+                        </p>
+                        <div style="color: var(--text-light); font-weight: bold;">- Ana L.</div>
+                    </div>
+                    
+                    <div class="category-card">
+                        <div style="color: var(--primary-color); margin-bottom: 10px;">⭐⭐⭐⭐⭐</div>
+                        <p style="color: var(--text-gray); font-style: italic; margin-bottom: 15px;">
+                            "Sitio web fácil de usar, muchas opciones de pago y la comunidad 
+                            gamer más cool de México. Totalmente recomendado."
+                        </p>
+                        <div style="color: var(--text-light); font-weight: bold;">- Carlos D.</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Newsletter -->
+            <section class="slide-in-left">
+                <div style="background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); border-radius: 20px; padding: 40px; text-align: center; color: #000;">
+                    <h2 style="font-size: 2rem; margin-bottom: 15px;">📧 Únete a nuestra comunidad</h2>
+                    <p style="margin-bottom: 25px; font-size: 1.1rem;">
+                        Recibe las mejores ofertas, lanzamientos exclusivos y noticias del mundo gaming
+                    </p>
+                    <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; max-width: 400px; margin: 0 auto;">
+                        <input type="email" placeholder="tu@email.com" 
+                               style="flex: 1; padding: 12px 15px; border: none; border-radius: 25px; min-width: 200px;">
+                        <button class="btn" style="background: #000; color: var(--primary-color); border: 2px solid #000;">
+                            Suscribirse
+                        </button>
+                    </div>
+                    <div style="margin-top: 15px; font-size: 0.9rem; opacity: 0.8;">
+                        🎁 Obtén 10% de descuento en tu primera compra
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/main.js"></script>
+    
+    <script>
+        // Variables para el mapa de la empresa
+        let companyMap;
+        const companyLocation = {
+            lat: 31.6904,
+            lng: -106.4245,
+            name: 'NeoGaming Headquarters',
+            address: 'Av. Tecnológico 1340, Fracc. Tomás Fernández'
+        };
+
+        // Inicializar página
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!requireAuth()) return;
+            
+            initializeCompanyMap();
+        });
+
+        // Inicializar mapa de la empresa
+        function initializeCompanyMap() {
+            const mapElement = document.getElementById('companyMap');
+            if (!mapElement) return;
+
+            // Crear mapa centrado en la empresa
+            companyMap = L.map('companyMap').setView([companyLocation.lat, companyLocation.lng], 16);
+            
+            // Añadir tiles de OpenStreetMap
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(companyMap);
+            
+            // Crear ícono personalizado para la empresa
+            const companyIcon = L.divIcon({
+                html: `
+                    <div style="
+                        background: var(--primary-color);
+                        color: #000;
+                        border-radius: 50%;
+                        width: 40px;
+                        height: 40px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 20px;
+                        font-weight: bold;
+                        box-shadow: 0 4px 15px rgba(0, 255, 136, 0.4);
+                    ">🎮</div>
+                `,
+                className: 'company-marker',
+                iconSize: [40, 40],
+                iconAnchor: [20, 20]
+            });
+            
+            // Añadir marcador de la empresa
+            L.marker([companyLocation.lat, companyLocation.lng], { icon: companyIcon })
+                .addTo(companyMap)
+                .bindPopup(`
+                    <div style="text-align: center; min-width: 200px;">
+                        <h3 style="color: var(--primary-color); margin-bottom: 10px;">
+                            🎮 NeoGaming HQ
+                        </h3>
+                        <p style="margin: 5px 0; color: #333;">
+                            <strong>📍 Dirección:</strong><br>
+                            ${companyLocation.address}
+                        </p>
+                        <p style="margin: 5px 0; color: #333;">
+                            <strong>🕒 Horarios:</strong><br>
+                            Lun-Vie: 9:00 AM - 7:00 PM<br>
+                            Sábado: 10:00 AM - 6:00 PM
+                        </p>
+                        <p style="margin: 5px 0; color: #333;">
+                            <strong>📞 Teléfono:</strong><br>
+                            +52 (656) 688-3800
+                        </p>
+                        <div style="margin-top: 10px;">
+                            <button onclick="getDirectionsToCompany()" 
+                                    style="background: #00ff88; color: #000; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">
+                                🧭 Cómo llegar
+                            </button>
+                        </div>
+                    </div>
+                `)
+                .openPopup();
+
+            console.log('Mapa de la empresa inicializado');
+        }
+
+        // Abrir en Google Maps
+        function openInMaps() {
+            const url = `https://www.google.com/maps?q=${companyLocation.lat},${companyLocation.lng}`;
+            window.open(url, '_blank');
+        }
+
+        // Obtener direcciones a la empresa
+        function getDirectionsToCompany() {
+            const directionsModal = document.createElement('div');
+            directionsModal.className = 'modal show';
+            
+            const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${companyLocation.lat},${companyLocation.lng}&travelmode=driving`;
+            const appleMapsUrl = `http://maps.apple.com/?daddr=${companyLocation.lat},${companyLocation.lng}`;
+            
+            directionsModal.innerHTML = `
+                <div class="modal-content" style="text-align: center; max-width: 450px;">
+                    <button class="modal-close" onclick="this.parentElement.parentElement.remove()">&times;</button>
+                    <div style="font-size: 3rem; margin-bottom: 15px;">🏢</div>
+                    <h3 style="color: var(--primary-color); margin-bottom: 15px;">
+                        Cómo llegar a NeoGaming
+                    </h3>
+                    <p style="color: var(--text-light); margin-bottom: 20px;">
+                        ${companyLocation.address}<br>
+                        Ciudad Juárez, Chihuahua
+                    </p>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <a href="${googleMapsUrl}" target="_blank" class="btn btn-primary" 
+                           style="display: block; margin-bottom: 10px;">
+                            🗺️ Abrir en Google Maps
+                        </a>
+                        <a href="${appleMapsUrl}" target="_blank" class="btn btn-secondary" 
+                           style="display: block; margin-bottom: 10px;">
+                            🍎 Abrir en Apple Maps
+                        </a>
+                        <button onclick="callCompany()" class="btn btn-secondary" 
+                               style="display: block;">
+                            📞 Llamar a la tienda
+                        </button>
+                    </div>
+                    
+                    <div style="background: var(--background-card); border-radius: 10px; padding: 15px; margin-top: 20px;">
+                        <h4 style="color: var(--text-light); margin-bottom: 10px;">🚗 Información de estacionamiento</h4>
+                        <p style="color: var(--text-gray); font-size: 0.9rem;">
+                            Estacionamiento gratuito disponible<br>
+                            Acceso para personas con discapacidad<br>
+                            Transporte público cercano
+                        </p>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(directionsModal);
+        }
+
+        // Llamar a la empresa
+        function callCompany() {
+            window.open('tel:+526566883800', '_self');
+        }
+
+        // Función para redimensionar el mapa
+        window.resizeCompanyMap = function() {
+            if (companyMap) {
+                setTimeout(() => {
+                    companyMap.invalidateSize();
+                }, 100);
+            }
+        };
+
+        // Hacer funciones disponibles globalmente
+        window.openInMaps = openInMaps;
+        window.getDirectionsToCompany = getDirectionsToCompany;
+        window.callCompany = callCompany;
+    </script>
+</body>
+</html>

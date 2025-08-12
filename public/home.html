@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - NeoGaming</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="home.html" class="navbar-brand">NeoGaming</a>
+            <ul class="navbar-menu">
+                <li class="navbar-item"><a href="home.html" class="active">Inicio</a></li>
+                <li class="navbar-item"><a href="search.html">Búsqueda</a></li>
+                <li class="navbar-item"><a href="products.html">Productos</a></li>
+                <li class="navbar-item"><a href="about.html">Acerca de</a></li>
+                <li class="navbar-item"><a href="#" id="logoutBtn">Salir</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Hero Section -->
+            <section class="hero fade-in">
+                <h1 class="hero-title">NeoGaming</h1>
+                <p class="hero-subtitle">Tu universo gamer en un solo lugar</p>
+                
+                <!-- Información del clima -->
+                <div id="weatherInfo" class="weather-info" style="display: none;">
+                    <div id="weatherContent">
+                        <!-- El contenido se llenará dinámicamente -->
+                    </div>
+                </div>
+                
+                <div class="landing-buttons">
+                    <a href="#products" class="btn btn-primary">▶ Explorar Juegos</a>
+                    <a href="#categories" class="btn btn-secondary">⭐ Ver Novedades</a>
+                </div>
+            </section>
+
+            <!-- Sección de Categorías -->
+            <section id="categories" class="categories-section slide-in-left">
+                <h2 class="section-title">Categorías de Videojuegos</h2>
+                <p style="color: var(--text-gray); margin-bottom: 30px;">Explora nuestras categorías cuidadosamente seleccionadas</p>
+                
+                <div class="categories-grid">
+                    <div class="category-card" data-category="Shooter / FPS">
+                        <span class="category-icon">🔫</span>
+                        <h3 class="category-title">Shooter / FPS</h3>
+                        <p class="category-description">Acción intensa y adrenalina pura</p>
+                        <span class="category-count">🎯 15+ juegos</span>
+                    </div>
+                    
+                    <div class="category-card" data-category="RPG / Fantasía">
+                        <span class="category-icon">⚔️</span>
+                        <h3 class="category-title">RPG / Fantasía</h3>
+                        <p class="category-description">Aventuras épicas y mundos mágicos</p>
+                        <span class="category-count">🗡️ 20+ juegos</span>
+                    </div>
+                    
+                    <div class="category-card" data-category="Deportes / Carreras">
+                        <span class="category-icon">🏁</span>
+                        <h3 class="category-title">Deportes / Carreras</h3>
+                        <p class="category-description">Competición y velocidad extrema</p>
+                        <span class="category-count">🏆 12+ juegos</span>
+                    </div>
+                    
+                    <div class="category-card" data-category="Estrategia / Simulación">
+                        <span class="category-icon">🏗️</span>
+                        <h3 class="category-title">Estrategia / Simulación</h3>
+                        <p class="category-description">Planificación y construcción de mundos</p>
+                        <span class="category-count">🔨 18+ juegos</span>
+                    </div>
+                    
+                    <div class="category-card" data-category="Terror / Suspenso">
+                        <span class="category-icon">👻</span>
+                        <h3 class="category-title">Terror / Suspenso</h3>
+                        <p class="category-description">Experiencias que aceleran tu corazón</p>
+                        <span class="category-count">🦇 8+ juegos</span>
+                    </div>
+                    
+                    <div class="category-card" data-category="Indie / Creativos">
+                        <span class="category-icon">🎨</span>
+                        <h3 class="category-title">Indie / Creativos</h3>
+                        <p class="category-description">Innovación y creatividad sin límites</p>
+                        <span class="category-count">✨ 25+ juegos</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección de Productos Destacados -->
+            <section id="products" class="products-section slide-in-right">
+                <h2 class="section-title">Juegos Destacados</h2>
+                <p style="color: var(--text-gray); margin-bottom: 30px;">Los mejores títulos seleccionados para ti</p>
+                
+                <div class="products-grid" id="productsGrid">
+                    <!-- Los productos se cargarán dinámicamente -->
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Modal para detalles del producto -->
+    <div id="productModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close">&times;</button>
+            <div id="modalContent">
+                <!-- El contenido se llenará dinámicamente -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://www.paypal.com/sdk/js?client-id=AZn9TTNsJ_t-mwZYyePx8mwMELbqSZ1OPcaYOsWhaAJ6yHWewrwe2AdDSAgC74wCMmRtWZrD8Rb1br1X&currency=USD"></script>
+    <script src="js/main.js"></script>
+    <script src="js/weather.js"></script>
+    <script src="js/paypal.js"></script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Búsqueda - NeoGaming</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="home.html" class="navbar-brand">NeoGaming</a>
+            <ul class="navbar-menu">
+                <li class="navbar-item"><a href="home.html">Inicio</a></li>
+                <li class="navbar-item"><a href="search.html" class="active">Búsqueda</a></li>
+                <li class="navbar-item"><a href="products.html">Productos</a></li>
+                <li class="navbar-item"><a href="about.html">Acerca de</a></li>
+                <li class="navbar-item"><a href="#" id="logoutBtn">Salir</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Hero Section -->
+            <section class="hero fade-in">
+                <h1 class="hero-title">🗺️ Explorar Ubicaciones</h1>
+                <p class="hero-subtitle">Encuentra tiendas de videojuegos cerca de ti</p>
+                
+                <div class="landing-buttons">
+                    <button onclick="findNearbyStores()" class="btn btn-primary" id="findStoresBtn">
+                        📍 Buscar Tiendas Cercanas
+                    </button>
+                    <button onclick="requestCurrentLocation()" class="btn btn-secondary">
+                        🎯 Mi Ubicación
+                    </button>
+                </div>
+            </section>
+
+            <!-- Información de ubicación -->
+            <section class="slide-in-left">
+                <div id="locationInfo" class="weather-info" style="display: none;">
+                    <div id="locationContent">
+                        <!-- El contenido se llenará dinámicamente -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Mapa -->
+            <section class="slide-in-right">
+                <h2 class="section-title">Mapa Interactivo</h2>
+                <div class="map-container">
+                    <div id="map"></div>
+                </div>
+                
+                <div style="margin-top: 20px; text-align: center;">
+                    <div class="alert alert-info">
+                        <strong>💡 Tip:</strong> Haz clic en los marcadores del mapa para ver información de las tiendas
+                    </div>
+                </div>
+            </section>
+
+            <!-- Lista de tiendas cercanas -->
+            <section id="storesSection" style="display: none;">
+                <h2 class="section-title">Tiendas Cercanas</h2>
+                <div id="storesList" class="categories-grid">
+                    <!-- Las tiendas se cargarán dinámicamente -->
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/maps.js"></script>
+</body>
+</html>

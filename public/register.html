@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - NeoGaming</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
+</head>
+<body>
+    <div class="auth-page">
+        <div class="auth-left" style="background-image: 
+        linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2)), 
+        url('/img/doom1.png');">
+        </div>
+        
+        <div class="auth-right">
+            <div class="auth-container">
+                <h2 class="auth-title">BIENVENIDO!!</h2>
+                
+                <form id="registerForm">
+                    <div class="form-group">
+                        <label class="form-label">Username</label>
+                        <input type="text" class="form-input" id="username" name="username" placeholder="Nombre" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">E-mail</label>
+                        <input type="email" class="form-input" id="email" name="email" placeholder="E-mail" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Contraseña</label>
+                        <input type="password" class="form-input" id="password" name="password" placeholder="Contraseña" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 30px;" id="registerBtn">
+                        REGISTRARSE
+                    </button>
+                </form>
+                
+                <div class="auth-footer">
+                    Ya tienes cuenta? <a href="login.html">Inicia sesión!!</a>
+                </div>
+                
+                <div id="registerAlert" class="alert" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+</body>
+</html>
