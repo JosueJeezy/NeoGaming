@@ -17,7 +17,7 @@
                 <li class="navbar-item"><a href="search.html">Búsqueda</a></li>
                 <li class="navbar-item"><a href="products.html" class="active">Productos</a></li>
                 <li class="navbar-item"><a href="about.html">Acerca de</a></li>
-                <li class="navbar-item"><a href="#" id="logoutBtn">Salir</a></li>
+                <li class="navbar-item"><a href="login.html" id="logoutBtn">Salir</a></li>
             </ul>
         </div>
     </nav>
@@ -55,7 +55,7 @@
                             ⚔️ RPG
                         </button>
                         <button onclick="filterByCategory('Deportes / Carreras')" class="btn btn-secondary filter-btn" data-category="Deportes / Carreras">
-                            🏁 Deportes
+                            🏎 Deportes
                         </button>
                         <button onclick="filterByCategory('Estrategia / Simulación')" class="btn btn-secondary filter-btn" data-category="Estrategia / Simulación">
                             🏗️ Estrategia
@@ -77,7 +77,7 @@
                 </div>
                 
                 <!-- Loading state -->
-                <div id="loadingProducts" style="text-align: center; padding: 40px; display: none;">
+                <div id="loadingProducts" style="text-align: center; padding: 40px; display: block;">
                     <div class="loading" style="margin: 0 auto 20px;"></div>
                     <p style="color: var(--text-gray);">Cargando productos...</p>
                 </div>
@@ -115,7 +115,7 @@
                                 <div style="font-size: 1.5rem; font-weight: bold;">-50%</div>
                                 <div>Indies</div>
                             </div>
-                            <div style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 10px; padding: 15px; color: white; min-width: 150px;">
+                            <div style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 15px; color: white; min-width: 150px;">
                                 <div style="font-size: 1.5rem; font-weight: bold;">-25%</div>
                                 <div>DLCs</div>
                             </div>
@@ -149,7 +149,10 @@
 
         // Inicializar página de productos
         document.addEventListener('DOMContentLoaded', async function() {
-            if (!requireAuth()) return;
+            console.log('Inicializando página de productos...');
+            
+            // No verificar auth para simplificar testing
+            // if (!requireAuth()) return;
             
             await loadAllProducts();
             setupProductsEventListeners();
@@ -157,23 +160,32 @@
 
         // Cargar todos los productos
         async function loadAllProducts() {
+            console.log('Cargando productos...');
             showLoadingState(true);
             
             try {
+                // Primero intentar API
+                const API_BASE_URL = getAPIBaseURL ? getAPIBaseURL() : 'http://localhost:3000/api';
+                console.log('Intentando cargar desde API:', `${API_BASE_URL}/products`);
+                
                 const response = await fetch(`${API_BASE_URL}/products`);
                 if (response.ok) {
                     allProducts = await response.json();
+                    console.log('Productos cargados desde API:', allProducts.length);
                 } else {
-                    console.error('Error cargando productos');
-                    allProducts = getExtendedExampleProducts();
+                    throw new Error(`API Error: ${response.status}`);
                 }
             } catch (error) {
-                console.error('Error cargando productos:', error);
+                console.warn('Error cargando desde API:', error.message);
+                console.log('Usando productos de ejemplo...');
                 allProducts = getExtendedExampleProducts();
             }
             
-            displayAllProducts(allProducts);
+            // Mostrar todos los productos inicialmente
+            filterByCategory('all');
             showLoadingState(false);
+            
+            console.log(`Productos listos: ${allProducts.length} productos cargados`);
         }
 
         // Mostrar estado de carga
@@ -194,6 +206,7 @@
 
         // Mostrar todos los productos
         function displayAllProducts(products) {
+            console.log(`Mostrando ${products.length} productos`);
             const productsGrid = document.getElementById('productsGrid');
             const productCount = document.getElementById('productCount');
             const noProductsEl = document.getElementById('noProducts');
@@ -217,8 +230,94 @@
             });
         }
 
+        // Crear tarjeta de producto
+        function createProductCard(product) {
+            const card = document.createElement('div');
+            card.className = 'product-card';
+            card.setAttribute('data-product-id', product.id);
+            
+            const price = parseFloat(product.price) || 0;
+            
+            card.innerHTML = `
+                <div class="product-image">
+                    ${product.image_url ? 
+                        `<img src="${product.image_url}" alt="${product.name}" 
+                             loading="lazy"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                         <div style="display: none; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 4rem; background: var(--background-gray);">🎮</div>` 
+                        : 
+                        '<div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 4rem; background: var(--background-gray);">🎮</div>'
+                    }
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">${product.name}</h3>
+                    <p class="product-category">${product.category}</p>
+                    <p class="product-description">${product.description ? product.description.substring(0, 80) + '...' : 'Descripción no disponible'}</p>
+                    <div class="product-price">$${price.toFixed(2)} USD</div>
+                </div>
+            `;
+            
+            card.addEventListener('click', () => showProductModal(product));
+            
+            return card;
+        }
+
+        // Mostrar modal del producto
+        function showProductModal(product) {
+            const modal = document.getElementById('productModal');
+            const modalContent = document.getElementById('modalContent');
+            
+            if (!modal || !modalContent) {
+                console.error('Modal elements not found');
+                return;
+            }
+            
+            const price = parseFloat(product.price) || 0;
+            
+            modalContent.innerHTML = `
+                <div class="modal-image">
+                    ${product.image_url ? 
+                        `<img src="${product.image_url}" alt="${product.name}" 
+                             style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px;" 
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                         <div style="display: none; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 4rem; background: var(--background-gray);">🎮</div>` 
+                        : 
+                        '<div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 4rem; background: var(--background-gray);">🎮</div>'
+                    }
+                </div>
+                <h2 class="modal-title">${product.name}</h2>
+                <p class="modal-category">${product.category}</p>
+                <p class="modal-description">${product.description || 'Descripción no disponible'}</p>
+                <div class="modal-price">$${price.toFixed(2)} USD</div>
+                <div class="modal-actions">
+                    <div id="paypal-button-container-${product.id}" class="paypal-button-container"></div>
+                </div>
+            `;
+            
+            modal.classList.add('show');
+            
+            // Inicializar botón de PayPal con delay
+            setTimeout(() => {
+                if (window.initPayPalButton) {
+                    console.log('Inicializando PayPal para:', product.name);
+                    window.initPayPalButton(product);
+                } else {
+                    console.warn('initPayPalButton no disponible');
+                }
+            }, 200);
+        }
+
+        // Cerrar modal
+        function closeModal() {
+            const modal = document.getElementById('productModal');
+            if (modal) {
+                modal.classList.remove('show');
+            }
+        }
+
         // Filtrar por categoría
         function filterByCategory(category) {
+            console.log('Filtrando por categoría:', category);
             currentFilter = category;
             
             // Actualizar botones de filtro
@@ -251,10 +350,29 @@
             
             // Actualizar contador
             document.getElementById('productCount').textContent = featuredProducts.length;
+            
+            // Actualizar filtros
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            filterButtons.forEach(btn => btn.classList.remove('active'));
         }
 
         // Configurar event listeners específicos de productos
         function setupProductsEventListeners() {
+            // Cerrar modal al hacer clic en X o fuera del modal
+            const modal = document.getElementById('productModal');
+            if (modal) {
+                const closeBtn = modal.querySelector('.modal-close');
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', closeModal);
+                }
+                
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        closeModal();
+                    }
+                });
+            }
+
             // Event listener para redimensionar la grilla
             window.addEventListener('resize', () => {
                 const grid = document.getElementById('productsGrid');
@@ -276,7 +394,7 @@
                     description: 'Shooter táctico de última generación con gráficos realistas y combates intensos que te sumergirán en la acción.',
                     price: 59.99,
                     category: 'Shooter / FPS',
-                    image_url: null
+                    image_url: 'https://image.api.playstation.com/vulcan/ap/rnd/202310/0410/c90521de8a000b1b68e0b20237ba88fe8e49cfc3a3ac2f58.png'
                 },
                 {
                     id: 2,
@@ -284,7 +402,7 @@
                     description: 'Épica aventura de fantasía con combates dinámicos, una historia envolvente y personajes inolvidables.',
                     price: 69.99,
                     category: 'RPG / Fantasía',
-                    image_url: null
+                    image_url: 'https://assets.nintendo.com/image/upload/c_fill,w_1200/q_auto:best/f_auto/dpr_2.0/ncom/software/switch/70010000063714/58fa8e90b0ee4b894b2e21ac97b59a84f1e1d3d8a8c59ea2acf5b9b89a3cac5a'
                 },
                 {
                     id: 3,
@@ -292,7 +410,7 @@
                     description: 'La experiencia futbolística más realista del año con nuevas mecánicas de juego y modo carrera mejorado.',
                     price: 49.99,
                     category: 'Deportes / Carreras',
-                    image_url: null
+                    image_url: 'https://image.api.playstation.com/vulcan/ap/rnd/202305/1210/1684a4434e5ceb5c10db17bc7ac32862a59b0e4dcdd46b3a.jpg'
                 },
                 {
                     id: 4,
@@ -300,7 +418,7 @@
                     description: 'Construye, explora y sobrevive en mundos infinitos llenos de posibilidades y aventuras épicas.',
                     price: 39.99,
                     category: 'Estrategia / Simulación',
-                    image_url: null
+                    image_url: 'https://image.api.playstation.com/vulcan/ap/rnd/202306/1219/48c673a6b90e3e5bd6e1fcc0606dcba40ad43b3b69f5a2f6.png'
                 },
                 {
                     id: 5,
@@ -308,7 +426,7 @@
                     description: 'Horror de supervivencia que te mantendrá al borde del asiento con gráficos renovados y jugabilidad mejorada.',
                     price: 59.99,
                     category: 'Terror / Suspenso',
-                    image_url: null
+                    image_url: 'https://image.api.playstation.com/vulcan/ap/rnd/202305/1719/caedc8ceb709d0b2e2b71549be9b6cff2e95bbff59e92f3e.png'
                 },
                 {
                     id: 6,
@@ -316,7 +434,7 @@
                     description: 'El FPS competitivo definitivo con nuevos gráficos, mecánicas mejoradas y modo competitivo renovado.',
                     price: 29.99,
                     category: 'Shooter / FPS',
-                    image_url: null
+                    image_url: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/730/header.jpg'
                 },
                 {
                     id: 7,
@@ -324,7 +442,7 @@
                     description: 'La próxima gran aventura en el mundo de Elder Scrolls con un mundo abierto masivo por explorar.',
                     price: 79.99,
                     category: 'RPG / Fantasía',
-                    image_url: null
+                    image_url: 'https://image.api.playstation.com/vulcan/ap/rnd/202302/2321/ba706e54d68d10a0334529312681f8991d1dd9bf6fd46231.png'
                 },
                 {
                     id: 8,
@@ -332,7 +450,7 @@
                     description: 'Simulador de carreras premium con los autos más exclusivos del mundo y pistas legendarias.',
                     price: 54.99,
                     category: 'Deportes / Carreras',
-                    image_url: null
+                    image_url: 'https://compass-ssl.xbox.com/assets/d2/90/d2909e95-6f74-46c2-baa6-6d34a4d9a8a8.jpg'
                 },
                 {
                     id: 9,
@@ -340,7 +458,7 @@
                     description: 'Constructor de ciudades definitivo con mecánicas avanzadas y posibilidades infinitas de diseño.',
                     price: 44.99,
                     category: 'Estrategia / Simulación',
-                    image_url: null
+                    image_url: 'https://image.api.playstation.com/vulcan/ap/rnd/202306/1219/48c673a6b90e3e5bd6e1fcc0606dcba40ad43b3b69f5a2f6.png'
                 },
                 {
                     id: 10,
@@ -348,7 +466,7 @@
                     description: 'El clásico del terror psicológico regresa completamente renovado con gráficos de nueva generación.',
                     price: 64.99,
                     category: 'Terror / Suspenso',
-                    image_url: null
+                    image_url: 'https://image.api.playstation.com/vulcan/ap/rnd/202212/1315/2nXUeKVLNFMqYTfRQrCfHRMh.png'
                 }
             ];
         }
@@ -357,6 +475,8 @@
         window.filterByCategory = filterByCategory;
         window.showAllProducts = showAllProducts;
         window.showFeatured = showFeatured;
+        window.closeModal = closeModal;
+        window.showProductModal = showProductModal;
     </script>
 </body>
 </html>

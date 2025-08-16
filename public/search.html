@@ -9,6 +9,26 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
 </head>
 <body>
+    <!-- Location Permission Modal -->
+    <div id="locationPermissionModal" class="location-permission-modal" style="display: none;">
+        <div class="permission-content">
+            <div class="permission-icon">📍</div>
+            <h3 class="permission-title">Permitir Acceso a Ubicación</h3>
+            <p class="permission-description">
+                Para brindarte la mejor experiencia y encontrar tiendas cercanas, 
+                necesitamos acceso a tu ubicación.
+            </p>
+            <div class="permission-buttons">
+                <button onclick="acceptLocationPermission()" class="btn btn-primary">
+                    ✅ Permitir
+                </button>
+                <button onclick="declineLocationPermission()" class="btn btn-secondary">
+                    ❌ Usar sin ubicación
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Navbar -->
     <nav class="navbar">
         <div class="navbar-container">
@@ -18,12 +38,12 @@
                 <li class="navbar-item"><a href="search.html" class="active">Búsqueda</a></li>
                 <li class="navbar-item"><a href="products.html">Productos</a></li>
                 <li class="navbar-item"><a href="about.html">Acerca de</a></li>
-                <li class="navbar-item"><a href="#" id="logoutBtn">Salir</a></li>
+                <li class="navbar-item"><a href="login.html">Salir</a></li>
             </ul>
         </div>
     </nav>
 
-    <!-- Contenido principal -->
+    <!-- Main Content -->
     <main class="main-content">
         <div class="container">
             <!-- Hero Section -->
@@ -33,42 +53,57 @@
                 
                 <div class="landing-buttons">
                     <button onclick="findNearbyStores()" class="btn btn-primary" id="findStoresBtn">
-                        📍 Buscar Tiendas Cercanas
+                        🎯 Buscar Tiendas Cercanas
                     </button>
-                    <button onclick="requestCurrentLocation()" class="btn btn-secondary">
-                        🎯 Mi Ubicación
+                    <button onclick="requestLocationManually()" class="btn btn-secondary" id="locationBtn">
+                        📍 Mi Ubicación
                     </button>
                 </div>
             </section>
 
-            <!-- Información de ubicación -->
-            <section class="slide-in-left">
-                <div id="locationInfo" class="weather-info" style="display: none;">
-                    <div id="locationContent">
-                        <!-- El contenido se llenará dinámicamente -->
+            <!-- Status Messages -->
+            <div id="statusMessage" class="status-message">
+                <!-- Status messages will appear here -->
+            </div>
+
+            <!-- Location Info -->
+            <section id="locationInfo" class="location-info">
+                <div id="locationContent">
+                    <!-- Location content will be populated here -->
+                </div>
+            </section>
+
+            <!-- Search Section -->
+            <section class="search-section">
+                <h2 class="section-title">🔍 Buscar Ubicación</h2>
+                <div class="search-container">
+                    <input type="text" 
+                           id="placeSearchInput" 
+                           class="search-input" 
+                           placeholder="Busca cualquier lugar: ciudades, restaurantes, tiendas, direcciones..."
+                           autocomplete="off">
+                    <button class="search-button" onclick="performSearch()" id="searchBtn">
+                        🔍
+                    </button>
+                    <div id="searchSuggestions" class="search-suggestions">
+                        <!-- Search suggestions will appear here -->
                     </div>
                 </div>
             </section>
 
-            <!-- Mapa -->
-            <section class="slide-in-right">
-                <h2 class="section-title">Mapa Interactivo</h2>
+            <!-- Map Section -->
+            <section class="map-section">
+                <h2 class="section-title">🗺️ Mapa Interactivo</h2>
                 <div class="map-container">
                     <div id="map"></div>
                 </div>
-                
-                <div style="margin-top: 20px; text-align: center;">
-                    <div class="alert alert-info">
-                        <strong>💡 Tip:</strong> Haz clic en los marcadores del mapa para ver información de las tiendas
-                    </div>
-                </div>
             </section>
 
-            <!-- Lista de tiendas cercanas -->
-            <section id="storesSection" style="display: none;">
-                <h2 class="section-title">Tiendas Cercanas</h2>
-                <div id="storesList" class="categories-grid">
-                    <!-- Las tiendas se cargarán dinámicamente -->
+            <!-- Stores Section -->
+            <section id="storesSection" class="stores-section" style="display: none;">
+                <h2 class="section-title">🎮 Tiendas Cercanas</h2>
+                <div id="storesList" class="stores-grid">
+                    <!-- Stores will be populated here -->
                 </div>
             </section>
         </div>
@@ -76,8 +111,826 @@
 
     <!-- Scripts -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/main.js"></script>
-    <script src="js/maps.js"></script>
+    <script>
+        // Global variables
+        let map;
+        let userLocation = null;
+        let userMarker = null;
+        let storeMarkers = [];
+        let searchMarkers = [];
+        let hasRequestedLocationPermission = false;
+
+        // Sample gaming stores data
+        const gameStores = [
+            {
+                id: 1,
+                name: 'GameStop Centro',
+                lat: 31.6904 + 0.01,
+                lng: -106.4245 + 0.01,
+                address: 'Av. 16 de Septiembre 123, Centro',
+                phone: '+52 656 123-4567',
+                hours: 'Lun-Sáb: 10:00 - 22:00',
+                rating: 4.5,
+                specialties: ['Consolas', 'Videojuegos nuevos', 'Accesorios']
+            },
+            {
+                id: 2,
+                name: 'ElectroGamer Plaza',
+                lat: 31.6904 - 0.015,
+                lng: -106.4245 + 0.02,
+                address: 'Blvd. Teófilo Borunda 456, Pronaf',
+                phone: '+52 656 234-5678',
+                hours: 'Lun-Dom: 11:00 - 21:00',
+                rating: 4.2,
+                specialties: ['PC Gaming', 'Hardware', 'Streaming']
+            },
+            {
+                id: 3,
+                name: 'Retro Gaming House',
+                lat: 31.6904 + 0.02,
+                lng: -106.4245 - 0.01,
+                address: 'Calle Mariscal 789, Mariano Matamoros',
+                phone: '+52 656 345-6789',
+                hours: 'Mar-Dom: 12:00 - 20:00',
+                rating: 4.8,
+                specialties: ['Juegos retro', 'Consolas clásicas', 'Coleccionables']
+            },
+            {
+                id: 4,
+                name: 'TecnoJuegos Mall',
+                lat: 31.6904 - 0.02,
+                lng: -106.4245 - 0.015,
+                address: 'Las Misiones Mall, Local 45',
+                phone: '+52 656 456-7890',
+                hours: 'Lun-Dom: 10:00 - 22:00',
+                rating: 4.3,
+                specialties: ['Última generación', 'VR', 'E-sports']
+            },
+            {
+                id: 5,
+                name: 'Cyber Games Café',
+                lat: 31.6904 + 0.008,
+                lng: -106.4245 + 0.025,
+                address: 'Av. Universidad 321, UACJ',
+                phone: '+52 656 567-8901',
+                hours: '24 horas',
+                rating: 4.1,
+                specialties: ['Internet café', 'Torneos', 'Gaming lounge']
+            }
+        ];
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎮 Inicializando página de búsqueda...');
+            initializePage();
+        });
+
+        // Initialize the page
+        function initializePage() {
+            initializeMap();
+            setupSearchInput();
+            
+            // Show location permission modal after a brief delay
+            setTimeout(() => {
+                showLocationPermissionModal();
+            }, 1000);
+        }
+
+        // Show location permission modal
+        function showLocationPermissionModal() {
+            if (!hasRequestedLocationPermission) {
+                const modal = document.getElementById('locationPermissionModal');
+                modal.style.display = 'flex';
+                modal.style.opacity = '0';
+                
+                setTimeout(() => {
+                    modal.style.transition = 'opacity 0.3s ease';
+                    modal.style.opacity = '1';
+                }, 10);
+            }
+        }
+
+        // Accept location permission
+        function acceptLocationPermission() {
+            hideLocationPermissionModal();
+            requestLocationAccess();
+        }
+
+        // Decline location permission
+        function declineLocationPermission() {
+            hideLocationPermissionModal();
+            showStatusMessage('Puedes buscar lugares manualmente usando el buscador', 'info');
+            useDefaultLocation();
+        }
+
+        // Hide location permission modal
+        function hideLocationPermissionModal() {
+            hasRequestedLocationPermission = true;
+            const modal = document.getElementById('locationPermissionModal');
+            modal.style.opacity = '0';
+            
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+        }
+
+        // Request location access
+        function requestLocationAccess() {
+            showStatusMessage('🎯 Obteniendo tu ubicación...', 'info');
+            
+            if (!navigator.geolocation) {
+                showStatusMessage('❌ Geolocalización no soportada en este navegador', 'error');
+                useDefaultLocation();
+                return;
+            }
+
+            const options = {
+                enableHighAccuracy: true,
+                timeout: 15000,
+                maximumAge: 300000
+            };
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const { latitude, longitude } = position.coords;
+                    userLocation = { lat: latitude, lng: longitude };
+                    
+                    showStatusMessage('✅ Ubicación obtenida correctamente', 'success');
+                    updateMapWithUserLocation(latitude, longitude);
+                    showLocationInfo(latitude, longitude);
+                    findNearbyStores();
+                    
+                    setTimeout(() => hideStatusMessage(), 3000);
+                },
+                (error) => {
+                    console.warn('Error getting location:', error);
+                    let message = '';
+                    
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            message = '❌ Acceso a ubicación denegado';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            message = '⚠️ Ubicación no disponible';
+                            break;
+                        case error.TIMEOUT:
+                            message = '⏰ Tiempo de espera agotado';
+                            break;
+                        default:
+                            message = '❌ Error desconocido';
+                            break;
+                    }
+                    
+                    showStatusMessage(message + ' - usando ubicación por defecto', 'error');
+                    useDefaultLocation();
+                    
+                    setTimeout(() => hideStatusMessage(), 5000);
+                },
+                options
+            );
+        }
+
+        // Request location manually (button click)
+        function requestLocationManually() {
+            requestLocationAccess();
+        }
+
+        // Use default location (Ciudad Juárez)
+        function useDefaultLocation() {
+            const defaultLat = 31.6904;
+            const defaultLng = -106.4245;
+            
+            userLocation = { lat: defaultLat, lng: defaultLng };
+            updateMapWithUserLocation(defaultLat, defaultLng);
+            showLocationInfo(defaultLat, defaultLng, true);
+            findNearbyStores();
+        }
+
+        // Initialize map
+        function initializeMap() {
+            const defaultLat = 31.6904;
+            const defaultLng = -106.4245;
+            
+            map = L.map('map', {
+                zoomControl: true,
+                attributionControl: true
+            }).setView([defaultLat, defaultLng], 13);
+            
+            // Add OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19,
+                minZoom: 3
+            }).addTo(map);
+            
+            // Add store markers
+            addStoreMarkers();
+            
+            console.log('🗺️ Mapa inicializado');
+        }
+
+        // Add store markers to map
+        function addStoreMarkers() {
+            gameStores.forEach(store => {
+                const storeIcon = L.divIcon({
+                    html: '🎮',
+                    className: 'store-marker',
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 30],
+                    popupAnchor: [0, -30]
+                });
+                
+                const marker = L.marker([store.lat, store.lng], { icon: storeIcon })
+                    .addTo(map)
+                    .bindPopup(createStorePopupContent(store));
+                
+                storeMarkers.push(marker);
+            });
+        }
+
+        // Create store popup content
+        function createStorePopupContent(store) {
+            const stars = '⭐'.repeat(Math.floor(store.rating));
+            const halfStar = (store.rating % 1) >= 0.5 ? '½' : '';
+            
+            return `
+                <div style="min-width: 250px;">
+                    <h3 style="color: #00ff88; margin-bottom: 10px; text-align: center;">
+                        ${store.name}
+                    </h3>
+                    <div style="margin: 8px 0; font-size: 0.9rem;">
+                        <div><strong>📍 Dirección:</strong><br>${store.address}</div>
+                        <div><strong>📞 Teléfono:</strong> ${store.phone}</div>
+                        <div><strong>🕐 Horarios:</strong> ${store.hours}</div>
+                        <div><strong>⭐ Rating:</strong> ${stars}${halfStar} (${store.rating}/5)</div>
+                    </div>
+                    <div style="margin: 10px 0; padding: 8px; background: #f0f0f0; border-radius: 5px;">
+                        <strong>🎮 Especialidades:</strong><br>
+                        ${store.specialties.join(', ')}
+                    </div>
+                    <div style="display: flex; gap: 5px; margin-top: 10px;">
+                        <button onclick="showDirections(${store.lat}, ${store.lng}, '${store.name}')" 
+                                style="flex: 1; background: #00ff88; color: #000; border: none; padding: 8px; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                            🚗 Cómo llegar
+                        </button>
+                        <button onclick="map.setView([${store.lat}, ${store.lng}], 17)" 
+                                style="background: #007acc; color: white; border: none; padding: 8px; border-radius: 5px; cursor: pointer;">
+                            🔍 Zoom
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Update map with user location
+        function updateMapWithUserLocation(lat, lng) {
+            // Remove existing user marker
+            if (userMarker) {
+                map.removeLayer(userMarker);
+            }
+            
+            // Create user location icon
+            const userIcon = L.divIcon({
+                html: '📍',
+                className: 'user-location-marker',
+                iconSize: [35, 35],
+                iconAnchor: [17, 35],
+                popupAnchor: [0, -35]
+            });
+            
+            // Add user marker
+            userMarker = L.marker([lat, lng], { icon: userIcon })
+                .addTo(map)
+                .bindPopup('📍 Tu ubicación actual')
+                .openPopup();
+            
+            // Center map with smooth animation
+            map.flyTo([lat, lng], 14, {
+                animate: true,
+                duration: 2
+            });
+        }
+
+        // Show location info
+        function showLocationInfo(lat, lng, isDefault = false) {
+            const locationInfo = document.getElementById('locationInfo');
+            const locationContent = document.getElementById('locationContent');
+            
+            if (!locationInfo || !locationContent) return;
+            
+            const locationText = isDefault ? 'Ciudad Juárez, Chihuahua (Ubicación por defecto)' : 'Tu ubicación actual';
+            
+            locationContent.innerHTML = `
+                <div style="font-size: 3rem; margin-bottom: 15px;">📍</div>
+                <h3 style="color: var(--primary-color); margin-bottom: 10px;">
+                    ${isDefault ? '🌎' : '✅'} ${locationText}
+                </h3>
+                <div style="color: var(--text-gray); margin-bottom: 15px;">
+                    <strong>Coordenadas:</strong><br>
+                    Lat: ${lat.toFixed(6)}° | Lng: ${lng.toFixed(6)}°
+                </div>
+                <div style="color: var(--text-light);">
+                    🎯 ${isDefault ? 'Buscando tiendas en la zona...' : 'Buscando tiendas cercanas...'}
+                </div>
+            `;
+            
+            locationInfo.style.display = 'block';
+            locationInfo.style.opacity = '0';
+            
+            setTimeout(() => {
+                locationInfo.style.transition = 'opacity 0.5s ease';
+                locationInfo.style.opacity = '1';
+            }, 100);
+        }
+
+        // Setup search input functionality
+        function setupSearchInput() {
+            const searchInput = document.getElementById('placeSearchInput');
+            const suggestionsDiv = document.getElementById('searchSuggestions');
+            
+            let searchTimeout;
+            
+            // Handle input changes
+            searchInput.addEventListener('input', function() {
+                const query = this.value.trim();
+                
+                clearTimeout(searchTimeout);
+                
+                if (query.length < 2) {
+                    hideSuggestions();
+                    return;
+                }
+                
+                searchTimeout = setTimeout(() => {
+                    showSearchSuggestions(query);
+                }, 300);
+            });
+            
+            // Handle Enter key
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    performSearch();
+                }
+            });
+            
+            // Close suggestions when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!searchInput.contains(e.target) && !suggestionsDiv.contains(e.target)) {
+                    hideSuggestions();
+                }
+            });
+        }
+
+        // Show search suggestions
+        async function showSearchSuggestions(query) {
+            const suggestionsDiv = document.getElementById('searchSuggestions');
+            
+            // Clear previous suggestions
+            suggestionsDiv.innerHTML = '';
+            
+            try {
+                // Use Nominatim API for geocoding suggestions
+                const response = await fetch(
+                    `https://nominatim.openstreetmap.org/search?format=json&limit=8&q=${encodeURIComponent(query)}&addressdetails=1`
+                );
+                
+                if (response.ok) {
+                    const results = await response.json();
+                    
+                    if (results && results.length > 0) {
+                        const suggestions = results.map(result => ({
+                            display_name: result.display_name,
+                            lat: parseFloat(result.lat),
+                            lng: parseFloat(result.lon),
+                            type: result.type || 'place'
+                        }));
+                        
+                        displaySuggestions(suggestions);
+                    } else {
+                        showNoResultsMessage();
+                    }
+                } else {
+                    showFallbackSuggestions(query);
+                }
+            } catch (error) {
+                console.log('Error fetching suggestions, showing fallback');
+                showFallbackSuggestions(query);
+            }
+        }
+
+        // Display suggestions in the dropdown
+        function displaySuggestions(suggestions) {
+            const suggestionsDiv = document.getElementById('searchSuggestions');
+            
+            const suggestionsHTML = suggestions.map(suggestion => {
+                const icon = getLocationIcon(suggestion.type);
+                const shortName = suggestion.display_name.split(',').slice(0, 3).join(', ');
+                
+                return `
+                    <div class="suggestion-item" onclick="selectSuggestion(${suggestion.lat}, ${suggestion.lng}, '${shortName.replace(/'/g, "\\'")}')">
+                        <span>${icon}</span>
+                        <span>${shortName}</span>
+                    </div>
+                `;
+            }).join('');
+            
+            suggestionsDiv.innerHTML = suggestionsHTML;
+            suggestionsDiv.style.display = 'block';
+        }
+
+        // Get appropriate icon for location type
+        function getLocationIcon(type) {
+            const icons = {
+                city: '🏙️',
+                town: '🏘️',
+                village: '🏡',
+                restaurant: '🍽️',
+                hotel: '🏨',
+                shop: '🏪',
+                mall: '🛍️',
+                school: '🏫',
+                hospital: '🏥',
+                bank: '🏦',
+                gas: '⛽',
+                default: '📍'
+            };
+            
+            return icons[type] || icons.default;
+        }
+
+        // Show fallback suggestions for common places
+        function showFallbackSuggestions(query) {
+            const fallbackPlaces = [
+                { name: 'Ciudad Juárez, Chihuahua, México', lat: 31.6904, lng: -106.4245 },
+                { name: 'El Paso, Texas, USA', lat: 31.7619, lng: -106.4850 },
+                { name: 'Centro Histórico, Ciudad Juárez', lat: 31.6904, lng: -106.4245 },
+                { name: 'UACJ - Universidad Autónoma', lat: 31.6760, lng: -106.4245 },
+                { name: 'Las Misiones Mall, Ciudad Juárez', lat: 31.6890, lng: -106.4200 },
+                { name: 'Río Grande Mall, Ciudad Juárez', lat: 31.6800, lng: -106.4300 },
+                { name: 'Pronaf, Ciudad Juárez', lat: 31.6650, lng: -106.4100 },
+                { name: 'Downtown El Paso', lat: 31.7587, lng: -106.4869 }
+            ];
+            
+            const queryLower = query.toLowerCase();
+            const filtered = fallbackPlaces.filter(place => 
+                place.name.toLowerCase().includes(queryLower)
+            );
+            
+            if (filtered.length > 0) {
+                const suggestions = filtered.map(place => ({
+                    display_name: place.name,
+                    lat: place.lat,
+                    lng: place.lng,
+                    type: 'place'
+                }));
+                
+                displaySuggestions(suggestions);
+            } else {
+                showNoResultsMessage();
+            }
+        }
+
+        // Show no results message
+        function showNoResultsMessage() {
+            const suggestionsDiv = document.getElementById('searchSuggestions');
+            suggestionsDiv.innerHTML = `
+                <div class="suggestion-item" style="color: var(--text-gray); cursor: default;">
+                    ❌ No se encontraron resultados
+                </div>
+            `;
+            suggestionsDiv.style.display = 'block';
+        }
+
+        // Hide suggestions dropdown
+        function hideSuggestions() {
+            const suggestionsDiv = document.getElementById('searchSuggestions');
+            suggestionsDiv.style.display = 'none';
+        }
+
+        // Select a suggestion from dropdown
+        function selectSuggestion(lat, lng, displayName) {
+            const searchInput = document.getElementById('placeSearchInput');
+            
+            searchInput.value = displayName;
+            hideSuggestions();
+            
+            // Move map to selected location
+            moveToLocation(lat, lng, displayName);
+        }
+
+        // Perform search when button clicked or Enter pressed
+        async function performSearch() {
+            const searchInput = document.getElementById('placeSearchInput');
+            const searchBtn = document.getElementById('searchBtn');
+            const query = searchInput.value.trim();
+            
+            if (!query) {
+                showStatusMessage('⚠️ Por favor ingresa un lugar para buscar', 'error');
+                return;
+            }
+            
+            // Update button state
+            searchBtn.innerHTML = '<div class="loading"></div>';
+            searchBtn.disabled = true;
+            
+            showStatusMessage('🔍 Buscando ubicación...', 'info');
+            
+            try {
+                // Search using Nominatim API
+                const response = await fetch(
+                    `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}&addressdetails=1`
+                );
+                
+                if (response.ok) {
+                    const results = await response.json();
+                    
+                    if (results && results.length > 0) {
+                        const result = results[0];
+                        const lat = parseFloat(result.lat);
+                        const lng = parseFloat(result.lon);
+                        const displayName = result.display_name.split(',').slice(0, 3).join(', ');
+                        
+                        showStatusMessage(`✅ Ubicación encontrada: ${displayName}`, 'success');
+                        moveToLocation(lat, lng, displayName);
+                        
+                        setTimeout(() => hideStatusMessage(), 3000);
+                    } else {
+                        showStatusMessage('❌ Ubicación no encontrada. Intenta con términos más específicos', 'error');
+                        setTimeout(() => hideStatusMessage(), 5000);
+                    }
+                } else {
+                    throw new Error('Search API unavailable');
+                }
+            } catch (error) {
+                console.log('Search error, trying fallback');
+                performFallbackSearch(query);
+            }
+            
+            // Reset button
+            searchBtn.innerHTML = '🔍';
+            searchBtn.disabled = false;
+            hideSuggestions();
+        }
+
+        // Fallback search for known locations
+        function performFallbackSearch(query) {
+            const knownLocations = {
+                'ciudad juarez': { lat: 31.6904, lng: -106.4245, name: 'Ciudad Juárez, Chihuahua' },
+                'ciudad juárez': { lat: 31.6904, lng: -106.4245, name: 'Ciudad Juárez, Chihuahua' },
+                'el paso': { lat: 31.7619, lng: -106.4850, name: 'El Paso, Texas' },
+                'centro': { lat: 31.6904, lng: -106.4245, name: 'Centro Histórico, Ciudad Juárez' },
+                'uacj': { lat: 31.6760, lng: -106.4245, name: 'UACJ - Universidad Autónoma' },
+                'universidad': { lat: 31.6760, lng: -106.4245, name: 'UACJ - Universidad Autónoma' },
+                'pronaf': { lat: 31.6650, lng: -106.4100, name: 'Pronaf, Ciudad Juárez' },
+                'las misiones': { lat: 31.6890, lng: -106.4200, name: 'Las Misiones Mall' },
+                'rio grande': { lat: 31.6800, lng: -106.4300, name: 'Río Grande Mall' },
+                'downtown': { lat: 31.7587, lng: -106.4869, name: 'Downtown El Paso' }
+            };
+            
+            const queryLower = query.toLowerCase();
+            let foundLocation = null;
+            
+            // Find matching location
+            for (const [key, location] of Object.entries(knownLocations)) {
+                if (queryLower.includes(key) || key.includes(queryLower)) {
+                    foundLocation = location;
+                    break;
+                }
+            }
+            
+            if (foundLocation) {
+                showStatusMessage(`✅ Ubicación encontrada: ${foundLocation.name}`, 'success');
+                moveToLocation(foundLocation.lat, foundLocation.lng, foundLocation.name);
+                setTimeout(() => hideStatusMessage(), 3000);
+            } else {
+                showStatusMessage('❌ Ubicación no encontrada. Intenta con: Ciudad Juárez, El Paso, Centro, UACJ, etc.', 'error');
+                setTimeout(() => hideStatusMessage(), 5000);
+            }
+        }
+
+        // Move map to specific location
+        function moveToLocation(lat, lng, locationName) {
+            // Clear previous search markers
+            clearSearchMarkers();
+            
+            // Create search result marker
+            const searchIcon = L.divIcon({
+                html: '🔍',
+                className: 'search-result-marker',
+                iconSize: [40, 40],
+                iconAnchor: [20, 40],
+                popupAnchor: [0, -40]
+            });
+            
+            const searchMarker = L.marker([lat, lng], { icon: searchIcon })
+                .addTo(map)
+                .bindPopup(`🔍 ${locationName}`)
+                .openPopup();
+            
+            searchMarkers.push(searchMarker);
+            
+            // Animate to location
+            map.flyTo([lat, lng], 15, {
+                animate: true,
+                duration: 2
+            });
+            
+            // Scroll to map
+            setTimeout(() => {
+                document.getElementById('map').scrollIntoView({ behavior: 'smooth' });
+            }, 500);
+        }
+
+        // Clear search markers
+        function clearSearchMarkers() {
+            searchMarkers.forEach(marker => {
+                map.removeLayer(marker);
+            });
+            searchMarkers = [];
+        }
+
+        // Find nearby stores
+        function findNearbyStores() {
+            if (!userLocation) {
+                showStatusMessage('⚠️ Ubicación no disponible. Obten tu ubicación primero.', 'error');
+                return;
+            }
+            
+            showStatusMessage('🎮 Buscando tiendas cercanas...', 'info');
+            
+            // Calculate distances and sort stores
+            const storesWithDistance = gameStores.map(store => {
+                const distance = calculateDistance(
+                    userLocation.lat, userLocation.lng,
+                    store.lat, store.lng
+                );
+                return { ...store, distance };
+            }).sort((a, b) => a.distance - b.distance);
+            
+            displayNearbyStores(storesWithDistance);
+            showStatusMessage(`✅ Encontradas ${storesWithDistance.length} tiendas cercanas`, 'success');
+            
+            setTimeout(() => hideStatusMessage(), 3000);
+        }
+
+        // Calculate distance between two points (Haversine formula)
+        function calculateDistance(lat1, lng1, lat2, lng2) {
+            const R = 6371; // Earth's radius in km
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLng = (lng2 - lng1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                    Math.sin(dLng/2) * Math.sin(dLng/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        // Display nearby stores
+        function displayNearbyStores(stores) {
+            const storesSection = document.getElementById('storesSection');
+            const storesList = document.getElementById('storesList');
+            
+            if (!storesSection || !storesList) return;
+            
+            storesList.innerHTML = '';
+            
+            stores.forEach((store, index) => {
+                const storeCard = document.createElement('div');
+                storeCard.className = 'store-card';
+                storeCard.style.animationDelay = `${index * 0.1}s`;
+                
+                // Determine medal for closest stores
+                let badge = '';
+                if (index === 0) badge = '🥇 ';
+                else if (index === 1) badge = '🥈 ';
+                else if (index === 2) badge = '🥉 ';
+                
+                const stars = '⭐'.repeat(Math.floor(store.rating));
+                const halfStar = (store.rating % 1) >= 0.5 ? '½' : '';
+                
+                storeCard.innerHTML = `
+                    <span class="store-icon">🎮</span>
+                    <h3 class="store-name">${badge}${store.name}</h3>
+                    <p class="store-address">📍 ${store.address}</p>
+                    <div class="store-distance">🎯 ${store.distance.toFixed(1)} km de distancia</div>
+                    <div class="store-rating">${stars}${halfStar} (${store.rating}/5) • ${store.hours}</div>
+                    <div style="color: var(--text-gray); font-size: 0.9rem; margin-bottom: 1rem;">
+                        <strong>Especialidades:</strong> ${store.specialties.slice(0, 2).join(', ')}
+                    </div>
+                    <div class="store-actions">
+                        <button onclick="showStoreOnMap(${store.lat}, ${store.lng}, '${store.name}')" 
+                                class="btn btn-secondary" style="flex: 1; padding: 0.5rem; font-size: 0.9rem;">
+                            👁️ Ver en mapa
+                        </button>
+                        <button onclick="showDirections(${store.lat}, ${store.lng}, '${store.name}')" 
+                                class="btn btn-primary" style="flex: 1; padding: 0.5rem; font-size: 0.9rem;">
+                            🚗 Cómo llegar
+                        </button>
+                    </div>
+                `;
+                
+                storesList.appendChild(storeCard);
+            });
+            
+            storesSection.style.display = 'block';
+            
+            // Scroll to stores section
+            setTimeout(() => {
+                storesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 500);
+        }
+
+        // Show store on map
+        function showStoreOnMap(lat, lng, storeName) {
+            // Animate to store location
+            map.flyTo([lat, lng], 17, {
+                animate: true,
+                duration: 1.5
+            });
+            
+            // Find and open popup for the corresponding marker
+            storeMarkers.forEach(marker => {
+                const markerLat = marker.getLatLng().lat;
+                const markerLng = marker.getLatLng().lng;
+                
+                if (Math.abs(markerLat - lat) < 0.001 && Math.abs(markerLng - lng) < 0.001) {
+                    setTimeout(() => {
+                        marker.openPopup();
+                    }, 1600);
+                }
+            });
+            
+            // Scroll to map
+            setTimeout(() => {
+                document.getElementById('map').scrollIntoView({ behavior: 'smooth' });
+            }, 200);
+            
+            showStatusMessage(`🔍 Mostrando ${storeName} en el mapa`, 'success');
+            setTimeout(() => hideStatusMessage(), 3000);
+        }
+
+        // Show directions to store
+        function showDirections(lat, lng, storeName) {
+            const modal = document.createElement('div');
+            modal.className = 'modal show';
+            
+            const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
+            const appleMapsUrl = `http://maps.apple.com/?daddr=${lat},${lng}`;
+            const wazeUrl = `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`;
+            
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <button class="modal-close" onclick="this.parentElement.parentElement.remove()">&times;</button>
+                    
+                    <div style="font-size: 4rem; margin-bottom: 1rem; text-align: center;">🗺️</div>
+                    
+                    <h3 style="color: var(--primary-color); margin-bottom: 0.5rem; font-size: 1.5rem; text-align: center;">
+                        Cómo llegar a
+                    </h3>
+                    <p style="color: var(--text-light); font-weight: bold; margin-bottom: 2rem; font-size: 1.1rem; text-align: center;">
+                        ${storeName}
+                    </p>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem;">
+                        <a href="${googleMapsUrl}" target="_blank" 
+                           class="btn btn-primary" style="display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                            <span>🗺️</span> Abrir en Google Maps
+                        </a>
+                        <a href="${appleMapsUrl}" target="_blank" 
+                           class="btn btn-secondary" style="display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                            <span>🍎</span> Abrir en Apple Maps
+                        </a>
+                        <a href="${wazeUrl}" target="_blank" 
+                           class="btn btn-secondary" style="display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                            <span>🚗</span> Abrir en Waze
+                        </a>
+                    </div>
+                    
+                    <div style="color: var(--text-gray); font-size: 0.9rem; line-height: 1.4; text-align: center;">
+                        Se abrirá tu aplicación de navegación preferida
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+
+        // Status message functions
+        function showStatusMessage(message, type) {
+            const statusDiv = document.getElementById('statusMessage');
+            
+            statusDiv.className = `alert alert-${type}`;
+            statusDiv.innerHTML = message;
+            statusDiv.style.display = 'block';
+        }
+
+        function hideStatusMessage() {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.style.display = 'none';
+        }
+
+        console.log('🎮 Página de búsqueda cargada completamente');
+    </script>
 </body>
 </html>
