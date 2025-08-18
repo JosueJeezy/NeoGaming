@@ -6,11 +6,6 @@ function getAPIBaseURL() {
     }
     // En desarrollo local, usar puerto 3000
     return 'http://localhost:3000/api';
-} else {
-        // Usar la misma IP pero puerto 3000 para la API
-        const hostIP = currentHost.split(':')[0]; // Remover puerto si existe
-        return `${protocol}//${hostIP}:3000/api`;
-    }
 }
 
 const API_BASE_URL = getAPIBaseURL();
