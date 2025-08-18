@@ -1,16 +1,21 @@
 const mysql = require('mysql2/promise');
 
+// Cargar variables de entorno
+require('dotenv').config();
+
 // Configuración de la base de datos
 const dbConfig = {
-    host: 'localhost',
-    user: 'root', // Cambia por tu usuario de MySQL
-    password: '12345', // Cambia por tu contraseña de MySQL
-    database: 'neogaming',
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || '12345',
+    database: process.env.DB_NAME || 'neogaming',
     charset: 'utf8mb4',
     timezone: '+00:00',
     acquireTimeout: 60000,
     timeout: 60000,
-    reconnect: true
+    reconnect: true,
+    // SSL para conexiones en producción (muchos servicios de BD en la nube lo requieren)
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 };
 
 // Crear pool de conexiones para mejor rendimiento
@@ -26,13 +31,17 @@ const pool = mysql.createPool({
 // Función para ejecutar consultas
 const query = async (sql, params = []) => {
     try {
-        console.log('Ejecutando consulta SQL:', sql.substring(0, 100) + (sql.length > 100 ? '...' : ''));
+        if (process.env.NODE_ENV !== 'production') {
+            console.log('Ejecutando consulta SQL:', sql.substring(0, 100) + (sql.length > 100 ? '...' : ''));
+        }
         const [results] = await pool.execute(sql, params);
         return results;
     } catch (error) {
         console.error('Error en la consulta SQL:', error.message);
-        console.error('SQL:', sql);
-        console.error('Params:', params);
+        if (process.env.NODE_ENV !== 'production') {
+            console.error('SQL:', sql);
+            console.error('Params:', params);
+        }
         throw error;
     }
 };
@@ -52,11 +61,11 @@ const testConnection = async () => {
         console.error('❌ Error al conectar con MySQL:', error.message);
         
         if (error.code === 'ER_ACCESS_DENIED_ERROR') {
-            console.error('🔐 Error de autenticación: Verifica usuario y contraseña en database.js');
+            console.error('🔐 Error de autenticación: Verifica las variables de entorno DB_USER y DB_PASSWORD');
         } else if (error.code === 'ER_BAD_DB_ERROR') {
-            console.error('🗄️  Base de datos no existe: Ejecuta el archivo schema.sql primero');
+            console.error('🗄️ Base de datos no existe: Verifica DB_NAME en las variables de entorno');
         } else if (error.code === 'ECONNREFUSED') {
-            console.error('🔌 Conexión rechazada: Verifica que MySQL esté ejecutándose');
+            console.error('🔌 Conexión rechazada: Verifica DB_HOST y que MySQL esté ejecutándose');
         }
         
         return false;
@@ -101,10 +110,10 @@ const initializeExampleData = async () => {
     }
 };
 
-// Probar conexión e inicializar datos al cargar el módulo
+// Probar conexión e inicializar datos solo si no estamos en producción
 const initializeDatabase = async () => {
     const isConnected = await testConnection();
-    if (isConnected) {
+    if (isConnected && process.env.NODE_ENV !== 'production') {
         await initializeExampleData();
     }
 };
