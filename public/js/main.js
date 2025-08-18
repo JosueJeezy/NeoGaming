@@ -1,13 +1,12 @@
 // Configuración global - Detección automática de host
 function getAPIBaseURL() {
-    // Obtener el host actual (IP de la VM)
-    const currentHost = window.location.host;
-    const protocol = window.location.protocol;
-    
-    // Si estamos en localhost, usar localhost, sino usar la IP actual
-    if (currentHost.includes('localhost') || currentHost.includes('127.0.0.1')) {
-        return 'http://localhost:3000/api';
-    } else {
+    // En producción (Vercel), usar rutas relativas
+    if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        return '/api'; // Ruta relativa para Vercel
+    }
+    // En desarrollo local, usar puerto 3000
+    return 'http://localhost:3000/api';
+} else {
         // Usar la misma IP pero puerto 3000 para la API
         const hostIP = currentHost.split(':')[0]; // Remover puerto si existe
         return `${protocol}//${hostIP}:3000/api`;
@@ -91,6 +90,9 @@ async function initializeHomePage() {
     console.log('Inicializando página de inicio...');
     
     try {
+        // Probar API primero
+        await testAPIOnLoad();
+        
         // Cargar productos PRIMERO (más importante)
         await loadProducts();
         
@@ -168,25 +170,32 @@ async function loadProducts() {
     try {
         console.log('Intentando cargar productos desde:', `${API_BASE_URL}/products`);
         
-        // Timeout para la petición API
-        const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('Timeout de API')), 5000)
-        );
+        // Primero probar conectividad de la API
+        const apiAvailable = await testAPIConnection();
         
-        const fetchPromise = fetch(`${API_BASE_URL}/products`);
+        if (!apiAvailable) {
+            throw new Error('API no disponible');
+        }
         
-        const response = await Promise.race([fetchPromise, timeoutPromise]);
+        // Cargar productos usando la nueva función apiRequest
+        const response = await fetch(`${API_BASE_URL}/products`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include'
+        });
         
         if (response.ok) {
             productsData = await response.json();
-            console.log('Productos cargados desde API:', productsData.length);
+            console.log('✅ Productos cargados desde API:', productsData.length);
             displayProducts(productsData);
         } else {
             throw new Error(`HTTP ${response.status}`);
         }
     } catch (error) {
-        console.warn('Error cargando productos desde API:', error.message);
-        console.log('Usando productos de ejemplo');
+        console.warn('⚠️ Error cargando productos desde API:', error.message);
+        console.log('📦 Usando productos de ejemplo como fallback');
         productsData = getExampleProducts();
         displayProducts(productsData);
     }
@@ -844,6 +853,20 @@ if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', handleScrollAnimations);
 } else {
     handleScrollAnimations();
+}
+
+// Función para probar la API cuando la página carga
+async function testAPIOnLoad() {
+    console.log('🔍 Probando conectividad API al cargar...');
+    const apiWorking = await testAPIConnection();
+    
+    if (apiWorking) {
+        console.log('✅ API funcionando correctamente');
+    } else {
+        console.warn('⚠️ API no disponible, usando modo offline');
+    }
+    
+    return apiWorking;
 }
 
 // Funciones para debugging
