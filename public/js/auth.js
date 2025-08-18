@@ -1,17 +1,11 @@
 // Configuración de la API - Detección automática de host
 function getAPIBaseURL() {
-    // Obtener el host actual (IP de la VM)
-    const currentHost = window.location.host;
-    const protocol = window.location.protocol;
-    
-    // Si estamos en localhost, usar localhost, sino usar la IP actual
-    if (currentHost.includes('localhost') || currentHost.includes('127.0.0.1')) {
-        return 'http://localhost:3000/api';
-    } else {
-        // Usar la misma IP pero puerto 3000 para la API
-        const hostIP = currentHost.split(':')[0]; // Remover puerto si existe
-        return `${protocol}//${hostIP}:3000/api`;
+    // En producción (Vercel), usar rutas relativas
+    if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        return '/api'; // Ruta relativa para Vercel
     }
+    // En desarrollo local, usar puerto 3000
+    return 'http://localhost:3000/api';
 }
 
 const API_BASE_URL = getAPIBaseURL();
