@@ -14,7 +14,7 @@ const corsOptions = {
         // En producción, permitir solo dominios específicos
         if (process.env.NODE_ENV === 'production') {
             const allowedOrigins = [
-                'https://tu-dominio.vercel.app', // Reemplaza con tu dominio real
+                'https://neo-gaming.vercel.app', // Reemplaza con tu dominio real
                 /https:\/\/.*\.vercel\.app$/ // Permitir subdominios de Vercel
             ];
             
