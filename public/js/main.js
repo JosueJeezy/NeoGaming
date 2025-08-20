@@ -462,15 +462,16 @@ function createCategoryProductCard(product) {
 
 // Nueva función para mostrar modal por ID
 function showProductModalById(productId) {
-    // Buscar el producto en el array actual de productos de la categoría
-    let product = currentCategoryProducts.find(p => p.id === productId);
+    console.log('Buscando producto con ID:', productId);
     
-    // Si no se encuentra, buscar en todos los productos
-    if (!product) {
-        product = productsData.find(p => p.id === productId);
-    }
+    // Buscar el producto con comparación robusta
+    const compareIds = (id1, id2) => String(id1) === String(id2);
+    
+    let product = currentCategoryProducts.find(p => compareIds(p.id, productId)) || 
+                 productsData.find(p => compareIds(p.id, productId));
     
     if (product) {
+        console.log('Producto encontrado:', product.name);
         showProductModal(product);
     } else {
         console.error('Producto no encontrado:', productId);
