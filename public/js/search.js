@@ -125,7 +125,7 @@ function hideLocationPermissionModal() {
 
 // Request location access
 function requestLocationAccess() {
-    showStatusMessage('🎯 Obteniendo tu ubicación con alta precisión...', 'info');
+    showStatusMessage('🎯 Obteniendo tu ubicación...', 'info');
     
     if (!navigator.geolocation) {
         showStatusMessage('❌ Geolocalización no soportada en este navegador', 'error');
@@ -133,129 +133,25 @@ function requestLocationAccess() {
         return;
     }
 
-    // Configuración optimizada para máxima precisión
-    const highAccuracyOptions = {
+    const options = {
         enableHighAccuracy: true,
-        timeout: 30000, // Más tiempo para obtener mejor precisión
-        maximumAge: 0   // Forzar nueva lectura, no usar caché
+        timeout: 15000,
+        maximumAge: 300000
     };
 
-    // Primer intento con alta precisión
     navigator.geolocation.getCurrentPosition(
         (position) => {
-            const { latitude, longitude, accuracy } = position.coords;
-            
-            console.log(`📍 Ubicación obtenida - Precisión: ${accuracy} metros`);
-            
-            // Si la precisión es buena (menos de 50m), usar directamente
-            if (accuracy <= 50) {
-                userLocation = { lat: latitude, lng: longitude };
-                showStatusMessage(`✅ Ubicación obtenida con ${accuracy.toFixed(0)}m de precisión`, 'success');
-                updateMapWithUserLocation(latitude, longitude, accuracy);
-                showLocationInfo(latitude, longitude, false, accuracy);
-                setTimeout(() => hideStatusMessage(), 3000);
-            } else {
-                // Si la precisión no es buena, intentar mejorarla
-                showStatusMessage(`🔄 Mejorando precisión (actual: ${accuracy.toFixed(0)}m)...`, 'info');
-                improveLocationAccuracy(position);
-            }
-        },
-        (error) => {
-            console.warn('Error getting high accuracy location:', error);
-            // Si falla con alta precisión, intentar con configuración más relajada
-            tryFallbackLocation(error);
-        },
-        highAccuracyOptions
-    );
-}
-
-// Intentar mejorar la precisión de la ubicación
-function improveLocationAccuracy(initialPosition) {
-    let bestPosition = initialPosition;
-    let attempts = 0;
-    const maxAttempts = 3;
-    
-    const watchOptions = {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0
-    };
-    
-    const watchId = navigator.geolocation.watchPosition(
-        (position) => {
-            attempts++;
-            
-            // Si esta posición es más precisa que la anterior
-            if (position.coords.accuracy < bestPosition.coords.accuracy) {
-                bestPosition = position;
-                console.log(`🎯 Precisión mejorada: ${position.coords.accuracy}m`);
-                
-                // Actualizar ubicación en tiempo real
-                userLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
-                updateMapWithUserLocation(position.coords.latitude, position.coords.longitude, position.coords.accuracy);
-            }
-            
-            // Detener si alcanzamos buena precisión o máximo de intentos
-            if (position.coords.accuracy <= 20 || attempts >= maxAttempts) {
-                navigator.geolocation.clearWatch(watchId);
-                
-                userLocation = { lat: bestPosition.coords.latitude, lng: bestPosition.coords.longitude };
-                showStatusMessage(`✅ Mejor ubicación: ${bestPosition.coords.accuracy.toFixed(0)}m de precisión`, 'success');
-                updateMapWithUserLocation(bestPosition.coords.latitude, bestPosition.coords.longitude, bestPosition.coords.accuracy);
-                showLocationInfo(bestPosition.coords.latitude, bestPosition.coords.longitude, false, bestPosition.coords.accuracy);
-                setTimeout(() => hideStatusMessage(), 3000);
-            }
-        },
-        (error) => {
-            navigator.geolocation.clearWatch(watchId);
-            console.warn('Error improving accuracy:', error);
-            
-            // Usar la mejor posición que tengamos
-            userLocation = { lat: bestPosition.coords.latitude, lng: bestPosition.coords.longitude };
-            showStatusMessage(`⚠️ Usando mejor ubicación disponible: ${bestPosition.coords.accuracy.toFixed(0)}m`, 'info');
-            updateMapWithUserLocation(bestPosition.coords.latitude, bestPosition.coords.longitude, bestPosition.coords.accuracy);
-            showLocationInfo(bestPosition.coords.latitude, bestPosition.coords.longitude, false, bestPosition.coords.accuracy);
-            setTimeout(() => hideStatusMessage(), 3000);
-        },
-        watchOptions
-    );
-    
-    // Timeout de seguridad
-    setTimeout(() => {
-        navigator.geolocation.clearWatch(watchId);
-        if (attempts === 0) {
-            // Si no mejoramos nada, usar la posición inicial
-            userLocation = { lat: initialPosition.coords.latitude, lng: initialPosition.coords.longitude };
-            showStatusMessage(`📍 Ubicación establecida: ${initialPosition.coords.accuracy.toFixed(0)}m de precisión`, 'success');
-            updateMapWithUserLocation(initialPosition.coords.latitude, initialPosition.coords.longitude, initialPosition.coords.accuracy);
-            showLocationInfo(initialPosition.coords.latitude, initialPosition.coords.longitude, false, initialPosition.coords.accuracy);
-            setTimeout(() => hideStatusMessage(), 3000);
-        }
-    }, 15000);
-}
-
-// Intentar con configuración de respaldo si falla la alta precisión
-function tryFallbackLocation(originalError) {
-    showStatusMessage('🔄 Intentando con configuración alternativa...', 'info');
-    
-    const fallbackOptions = {
-        enableHighAccuracy: false, // Menos estricto
-        timeout: 20000,
-        maximumAge: 60000 // Permitir caché de 1 minuto
-    };
-    
-    navigator.geolocation.getCurrentPosition(
-        (position) => {
-            const { latitude, longitude, accuracy } = position.coords;
+            const { latitude, longitude } = position.coords;
             userLocation = { lat: latitude, lng: longitude };
             
-            showStatusMessage(`📍 Ubicación obtenida (precisión: ${accuracy.toFixed(0)}m)`, 'success');
-            updateMapWithUserLocation(latitude, longitude, accuracy);
-            showLocationInfo(latitude, longitude, false, accuracy);
+            showStatusMessage('✅ Ubicación obtenida correctamente', 'success');
+            updateMapWithUserLocation(latitude, longitude);
+            showLocationInfo(latitude, longitude);
+            
             setTimeout(() => hideStatusMessage(), 3000);
         },
         (error) => {
-            console.error('All location attempts failed:', error);
+            console.warn('Error getting location:', error);
             let message = '';
             
             switch(error.code) {
@@ -275,9 +171,10 @@ function tryFallbackLocation(originalError) {
             
             showStatusMessage(message + ' - usando ubicación por defecto', 'error');
             useDefaultLocation();
+            
             setTimeout(() => hideStatusMessage(), 5000);
         },
-        fallbackOptions
+        options
     );
 }
 
@@ -317,13 +214,10 @@ function initializeMap() {
 }
 
 // Update map with user location
-function updateMapWithUserLocation(lat, lng, accuracy = null) {
-    // Remove existing user marker and accuracy circle
+function updateMapWithUserLocation(lat, lng) {
+    // Remove existing user marker
     if (userMarker) {
         map.removeLayer(userMarker);
-    }
-    if (window.accuracyCircle) {
-        map.removeLayer(window.accuracyCircle);
     }
     
     // Create user location icon
@@ -335,47 +229,14 @@ function updateMapWithUserLocation(lat, lng, accuracy = null) {
         popupAnchor: [0, -35]
     });
     
-    // Add accuracy circle if we have accuracy data
-    if (accuracy && accuracy > 0) {
-        window.accuracyCircle = L.circle([lat, lng], {
-            radius: accuracy,
-            color: '#00ff88',
-            fillColor: '#00ff88',
-            fillOpacity: 0.1,
-            weight: 2,
-            opacity: 0.5
-        }).addTo(map);
-        
-        // Popup content with accuracy info
-        const popupContent = `
-            <div style="text-align: center;">
-                <div style="font-size: 1.5rem; margin-bottom: 5px;">📍</div>
-                <strong>Tu ubicación actual</strong><br>
-                <small style="color: #666;">
-                    Precisión: ±${accuracy.toFixed(0)} metros
-                </small>
-            </div>
-        `;
-        
-        // Add user marker
-        userMarker = L.marker([lat, lng], { icon: userIcon })
-            .addTo(map)
-            .bindPopup(popupContent)
-            .openPopup();
-    } else {
-        // Add user marker without accuracy info
-        userMarker = L.marker([lat, lng], { icon: userIcon })
-            .addTo(map)
-            .bindPopup('📍 Tu ubicación actual')
-            .openPopup();
-    }
+    // Add user marker
+    userMarker = L.marker([lat, lng], { icon: userIcon })
+        .addTo(map)
+        .bindPopup('📍 Tu ubicación actual')
+        .openPopup();
     
     // Center map with smooth animation
-    // Si tenemos círculo de precisión, ajustar zoom para mostrarlo
-    const zoomLevel = accuracy && accuracy > 100 ? 
-        Math.max(12, 16 - Math.log2(accuracy / 50)) : 15;
-    
-    map.flyTo([lat, lng], Math.floor(zoomLevel), {
+    map.flyTo([lat, lng], 14, {
         animate: true,
         duration: 2
     });
@@ -385,18 +246,13 @@ function updateMapWithUserLocation(lat, lng, accuracy = null) {
 }
 
 // Show location info
-function showLocationInfo(lat, lng, isDefault = false, accuracy = null) {
+function showLocationInfo(lat, lng, isDefault = false) {
     const locationInfo = document.getElementById('locationInfo');
     const locationContent = document.getElementById('locationContent');
     
     if (!locationInfo || !locationContent) return;
     
     const locationText = isDefault ? 'Ciudad Juárez, Chihuahua (Ubicación por defecto)' : 'Tu ubicación actual';
-    const accuracyText = accuracy ? 
-        `<div style="color: ${accuracy <= 20 ? '#00ff88' : accuracy <= 50 ? '#ffa500' : '#ff6b6b'}; margin: 5px 0;">
-            <strong>📡 Precisión:</strong> ±${accuracy.toFixed(0)} metros
-            ${accuracy <= 20 ? ' (Excelente)' : accuracy <= 50 ? ' (Buena)' : ' (Aceptable)'}
-        </div>` : '';
     
     locationContent.innerHTML = `
         <div style="font-size: 3rem; margin-bottom: 15px;">📍</div>
@@ -407,7 +263,6 @@ function showLocationInfo(lat, lng, isDefault = false, accuracy = null) {
             <strong>Coordenadas:</strong><br>
             Lat: ${lat.toFixed(6)}° | Lng: ${lng.toFixed(6)}°
         </div>
-        ${accuracyText}
         <div style="color: var(--text-light);">
             🔍 ¡Busca cualquier lugar en el buscador de arriba!
         </div>
