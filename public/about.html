@@ -7,6 +7,42 @@
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
+    <style>
+        /* Estilos específicos para el mapa */
+        .map-container {
+            width: 100%;
+            height: 400px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            margin: 20px 0;
+        }
+        
+        #companyMap {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .company-marker {
+            background: transparent !important;
+            border: none !important;
+        }
+        
+        /* Estilo para el popup */
+        .leaflet-popup-content-wrapper {
+            background: #1a1a1a;
+            color: #fff;
+            border-radius: 10px;
+        }
+        
+        .leaflet-popup-content {
+            margin: 15px;
+        }
+        
+        .leaflet-popup-tip {
+            background: #1a1a1a;
+        }
+    </style>
 </head>
 <body>
     <!-- Navbar -->
@@ -132,8 +168,8 @@
                             <span class="contact-icon">📍</span>
                             <div>
                                 <strong>Dirección:</strong><br>
-                                Av. Tecnológico 1340<br>
-                                Fracc. Tomás Fernández, CP 32575<br>
+                                Plaza Las Torres<br>
+                                Av. de las Torres 6501<br>
                                 Ciudad Juárez, Chihuahua, México
                             </div>
                         </div>
@@ -316,93 +352,136 @@
     <script>
         // Variables para el mapa de la empresa
         let companyMap;
+        
+        // Coordenadas exactas de Plaza Las Torres
         const companyLocation = {
-            lat: 31.6904,
-            lng: -106.4245,
-            name: 'NeoGaming Headquarters',
-            address: 'Av. Tecnológico 1340, Fracc. Tomás Fernández'
+            lat: 31.7587,
+            lng: -106.4864,
+            name: 'NeoGaming - Plaza Las Torres',
+            address: 'Plaza Las Torres, Av. de las Torres 6501, Ciudad Juárez, Chihuahua'
         };
 
         // Inicializar página
         document.addEventListener('DOMContentLoaded', function() {
-            if (!requireAuth()) return;
+            // Verificar autenticación si la función existe
+            if (typeof requireAuth === 'function') {
+                if (!requireAuth()) return;
+            }
             
-            initializeCompanyMap();
+            // Esperar un poco para asegurar que el DOM esté completamente cargado
+            setTimeout(() => {
+                initializeCompanyMap();
+            }, 500);
         });
 
         // Inicializar mapa de la empresa
         function initializeCompanyMap() {
             const mapElement = document.getElementById('companyMap');
-            if (!mapElement) return;
+            if (!mapElement) {
+                console.error('Elemento del mapa no encontrado');
+                return;
+            }
 
-            // Crear mapa centrado en la empresa
-            companyMap = L.map('companyMap').setView([companyLocation.lat, companyLocation.lng], 16);
-            
-            // Añadir tiles de OpenStreetMap
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors',
-                maxZoom: 19
-            }).addTo(companyMap);
-            
-            // Crear ícono personalizado para la empresa
-            const companyIcon = L.divIcon({
-                html: `
-                    <div style="
-                        background: var(--primary-color);
-                        color: #000;
-                        border-radius: 50%;
-                        width: 40px;
-                        height: 40px;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        font-size: 20px;
-                        font-weight: bold;
-                        box-shadow: 0 4px 15px rgba(0, 255, 136, 0.4);
-                    ">🎮</div>
-                `,
-                className: 'company-marker',
-                iconSize: [40, 40],
-                iconAnchor: [20, 20]
-            });
-            
-            // Añadir marcador de la empresa
-            L.marker([companyLocation.lat, companyLocation.lng], { icon: companyIcon })
-                .addTo(companyMap)
-                .bindPopup(`
-                    <div style="text-align: center; min-width: 200px;">
-                        <h3 style="color: var(--primary-color); margin-bottom: 10px;">
-                            🎮 NeoGaming HQ
-                        </h3>
-                        <p style="margin: 5px 0; color: #333;">
-                            <strong>📍 Dirección:</strong><br>
-                            ${companyLocation.address}
-                        </p>
-                        <p style="margin: 5px 0; color: #333;">
-                            <strong>🕒 Horarios:</strong><br>
-                            Lun-Vie: 9:00 AM - 7:00 PM<br>
-                            Sábado: 10:00 AM - 6:00 PM
-                        </p>
-                        <p style="margin: 5px 0; color: #333;">
-                            <strong>📞 Teléfono:</strong><br>
-                            +52 (656) 688-3800
-                        </p>
-                        <div style="margin-top: 10px;">
-                            <button onclick="getDirectionsToCompany()" 
-                                    style="background: #00ff88; color: #000; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">
-                                🧭 Cómo llegar
+            try {
+                console.log('Inicializando mapa en:', companyLocation);
+                
+                // Crear mapa centrado en Plaza Las Torres
+                companyMap = L.map('companyMap').setView([companyLocation.lat, companyLocation.lng], 16);
+                
+                // Añadir tiles de OpenStreetMap
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors',
+                    maxZoom: 19
+                }).addTo(companyMap);
+                
+                // Crear ícono personalizado para la empresa
+                const companyIcon = L.divIcon({
+                    html: `
+                        <div style="
+                            background: #00ff88;
+                            color: #000;
+                            border-radius: 50%;
+                            width: 40px;
+                            height: 40px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: 20px;
+                            font-weight: bold;
+                            box-shadow: 0 4px 15px rgba(0, 255, 136, 0.4);
+                            border: 3px solid #fff;
+                        ">🎮</div>
+                    `,
+                    className: 'company-marker',
+                    iconSize: [40, 40],
+                    iconAnchor: [20, 20]
+                });
+                
+                // Añadir marcador de la empresa
+                const marker = L.marker([companyLocation.lat, companyLocation.lng], { icon: companyIcon })
+                    .addTo(companyMap)
+                    .bindPopup(`
+                        <div style="text-align: center; min-width: 250px; color: #fff;">
+                            <h3 style="color: #00ff88; margin-bottom: 10px; font-size: 1.2rem;">
+                                🎮 NeoGaming Store
+                            </h3>
+                            <p style="margin: 8px 0; font-size: 0.9rem;">
+                                <strong>📍 Ubicación:</strong><br>
+                                Plaza Las Torres<br>
+                                Av. de las Torres 6501
+                            </p>
+                            <p style="margin: 8px 0; font-size: 0.9rem;">
+                                <strong>🕒 Horarios:</strong><br>
+                                Lun-Vie: 9:00 AM - 7:00 PM<br>
+                                Sábado: 10:00 AM - 6:00 PM<br>
+                                Domingo: 10:00 AM - 4:00 PM
+                            </p>
+                            <p style="margin: 8px 0; font-size: 0.9rem;">
+                                <strong>📞 Teléfono:</strong><br>
+                                +52 (656) 688-3800
+                            </p>
+                            <div style="margin-top: 15px;">
+                                <button onclick="getDirectionsToCompany()" 
+                                        style="background: #00ff88; color: #000; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 0.9rem;">
+                                    🧭 Cómo llegar
+                                </button>
+                            </div>
+                        </div>
+                    `)
+                    .openPopup();
+
+                console.log('✅ Mapa de la empresa inicializado correctamente');
+                
+                // Añadir marcador adicional para el área de la plaza
+                const plazaCircle = L.circle([companyLocation.lat, companyLocation.lng], {
+                    color: '#00ff88',
+                    fillColor: '#00ff88',
+                    fillOpacity: 0.1,
+                    radius: 200
+                }).addTo(companyMap);
+                
+            } catch (error) {
+                console.error('Error inicializando el mapa:', error);
+                
+                // Mostrar mensaje de error en el contenedor del mapa
+                mapElement.innerHTML = `
+                    <div style="display: flex; align-items: center; justify-content: center; height: 100%; background: #1a1a1a; color: #fff; text-align: center; padding: 20px;">
+                        <div>
+                            <div style="font-size: 3rem; margin-bottom: 15px;">🗺️</div>
+                            <h3 style="color: #00ff88;">Error cargando el mapa</h3>
+                            <p style="color: #ccc; margin: 10px 0;">No se pudo cargar el mapa interactivo</p>
+                            <button onclick="openInMaps()" class="btn btn-primary" style="margin-top: 15px;">
+                                📍 Ver en Google Maps
                             </button>
                         </div>
                     </div>
-                `)
-                .openPopup();
-
-            console.log('Mapa de la empresa inicializado');
+                `;
+            }
         }
 
         // Abrir en Google Maps
         function openInMaps() {
-            const url = `https://www.google.com/maps?q=${companyLocation.lat},${companyLocation.lng}`;
+            const url = `https://www.google.com/maps/place/Plaza+Las+Torres/@${companyLocation.lat},${companyLocation.lng},17z`;
             window.open(url, '_blank');
         }
 
@@ -410,43 +489,59 @@
         function getDirectionsToCompany() {
             const directionsModal = document.createElement('div');
             directionsModal.className = 'modal show';
+            directionsModal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.8);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 1000;
+            `;
             
             const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${companyLocation.lat},${companyLocation.lng}&travelmode=driving`;
             const appleMapsUrl = `http://maps.apple.com/?daddr=${companyLocation.lat},${companyLocation.lng}`;
             
             directionsModal.innerHTML = `
-                <div class="modal-content" style="text-align: center; max-width: 450px;">
-                    <button class="modal-close" onclick="this.parentElement.parentElement.remove()">&times;</button>
+                <div style="background: #1a1a1a; border-radius: 15px; padding: 30px; max-width: 450px; width: 90%; text-align: center; color: #fff; position: relative;">
+                    <button onclick="this.parentElement.parentElement.remove()" 
+                            style="position: absolute; top: 15px; right: 20px; background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">&times;</button>
+                    
                     <div style="font-size: 3rem; margin-bottom: 15px;">🏢</div>
-                    <h3 style="color: var(--primary-color); margin-bottom: 15px;">
+                    <h3 style="color: #00ff88; margin-bottom: 15px;">
                         Cómo llegar a NeoGaming
                     </h3>
-                    <p style="color: var(--text-light); margin-bottom: 20px;">
-                        ${companyLocation.address}<br>
+                    <p style="color: #ccc; margin-bottom: 20px; line-height: 1.5;">
+                        <strong>Plaza Las Torres</strong><br>
+                        Av. de las Torres 6501<br>
                         Ciudad Juárez, Chihuahua
                     </p>
                     
                     <div style="margin-bottom: 20px;">
-                        <a href="${googleMapsUrl}" target="_blank" class="btn btn-primary" 
-                           style="display: block; margin-bottom: 10px;">
+                        <a href="${googleMapsUrl}" target="_blank" 
+                           style="display: block; margin-bottom: 10px; background: #00ff88; color: #000; text-decoration: none; padding: 12px 20px; border-radius: 8px; font-weight: bold;">
                             🗺️ Abrir en Google Maps
                         </a>
-                        <a href="${appleMapsUrl}" target="_blank" class="btn btn-secondary" 
-                           style="display: block; margin-bottom: 10px;">
+                        <a href="${appleMapsUrl}" target="_blank" 
+                           style="display: block; margin-bottom: 10px; background: #333; color: #fff; text-decoration: none; padding: 12px 20px; border-radius: 8px;">
                             🍎 Abrir en Apple Maps
                         </a>
-                        <button onclick="callCompany()" class="btn btn-secondary" 
-                               style="display: block;">
+                        <button onclick="callCompany()" 
+                               style="display: block; width: 100%; background: #444; color: #fff; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer;">
                             📞 Llamar a la tienda
                         </button>
                     </div>
                     
-                    <div style="background: var(--background-card); border-radius: 10px; padding: 15px; margin-top: 20px;">
-                        <h4 style="color: var(--text-light); margin-bottom: 10px;">🚗 Información de estacionamiento</h4>
-                        <p style="color: var(--text-gray); font-size: 0.9rem;">
-                            Estacionamiento gratuito disponible<br>
-                            Acceso para personas con discapacidad<br>
-                            Transporte público cercano
+                    <div style="background: #2a2a2a; border-radius: 10px; padding: 15px; margin-top: 20px;">
+                        <h4 style="color: #00ff88; margin-bottom: 10px; font-size: 1rem;">🚗 Información de Plaza Las Torres</h4>
+                        <p style="color: #ccc; font-size: 0.85rem; line-height: 1.4;">
+                            • Estacionamiento gratuito amplio<br>
+                            • Acceso para personas con discapacidad<br>
+                            • Zona comercial con múltiples tiendas<br>
+                            • Fácil acceso desde Av. de las Torres
                         </p>
                     </div>
                 </div>
@@ -473,6 +568,13 @@
         window.openInMaps = openInMaps;
         window.getDirectionsToCompany = getDirectionsToCompany;
         window.callCompany = callCompany;
+        
+        // Redimensionar el mapa cuando la ventana cambie de tamaño
+        window.addEventListener('resize', function() {
+            if (window.resizeCompanyMap) {
+                window.resizeCompanyMap();
+            }
+        });
     </script>
 </body>
 </html>
