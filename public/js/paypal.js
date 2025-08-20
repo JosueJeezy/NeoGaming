@@ -32,7 +32,7 @@ function showSimplePaymentForm(product, containerId) {
                 <p style="color: var(--text-gray); font-size: 0.9rem;">Simulación de pago - Demo</p>
             </div>
             
-            <form id="paymentForm-${product.id}" onsubmit="processQuickPayment(event, ${product.id})">
+            <form id="paymentForm-${product.id}" onsubmit="processQuickPayment(event, ${JSON.stringify(product).replace(/"/g, '&quot;')})">
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
                     <input type="text" placeholder="Nombre completo" required 
                            style="padding: 10px; border: 1px solid var(--background-gray); border-radius: 5px; background: var(--background-dark); color: var(--text-light);">
@@ -70,7 +70,7 @@ function showSimplePaymentForm(product, containerId) {
             
             <div style="text-align: center; margin-top: 15px;">
                 <p style="color: var(--text-gray); font-size: 0.8rem;">
-                    🔐 Pago seguro - Simulación para demostración
+                    🔒 Pago seguro - Simulación para demostración
                 </p>
             </div>
         </div>
@@ -78,40 +78,22 @@ function showSimplePaymentForm(product, containerId) {
 }
 
 // Procesar pago rápido
-window.processQuickPayment = function(event, productId) {
+window.processQuickPayment = function(event, productData) {
     event.preventDefault();
     
-    // Encontrar el producto por ID
-    let product = null;
+    // Usar directamente el producto pasado como parámetro
+    const product = typeof productData === 'string' ? JSON.parse(productData) : productData;
     
-    // Primero buscar en productsData global (si está disponible)
-    if (window.productsData && window.productsData.length > 0) {
-        product = window.productsData.find(p => p.id === productId || p.id === productId.toString());
-    }
-    
-    // Si no se encuentra, buscar en los productos de ejemplo
     if (!product) {
-        const exampleProducts = getExampleProductsForPayment();
-        product = exampleProducts.find(p => p.id === productId || p.id === productId.toString());
-    }
-    
-    // Si aún no se encuentra, crear un producto genérico
-    if (!product) {
-        console.warn('Producto no encontrado, creando genérico');
-        product = {
-            id: productId,
-            name: 'Juego Desconocido',
-            price: 29.99,
-            category: 'Juego',
-            description: 'Producto no identificado'
-        };
+        console.error('Producto no encontrado para procesar pago');
+        return;
     }
     
     const form = event.target;
     const submitBtn = form.querySelector('button[type="submit"]');
     const originalText = submitBtn.innerHTML;
     
-    console.log('Procesando pago para:', product.name, 'ID:', productId);
+    console.log('Procesando pago para:', product.name, 'ID:', product.id);
     
     // Mostrar estado de carga
     submitBtn.innerHTML = '<div class="loading" style="display: inline-block; width: 20px; height: 20px; margin-right: 10px;"></div> Procesando...';
@@ -289,12 +271,6 @@ window.closeSuccessModalAndNavigate = function(url) {
     window.location.href = url;
 };
 
-// Manejar cancelación del pago
-function handlePaymentCancel(product) {
-    console.log('Pago cancelado para producto:', product.name);
-    showPaymentAlert('Pago cancelado', 'El pago ha sido cancelado. Puedes intentar nuevamente cuando gustes.', 'info');
-}
-
 // Manejar errores de pago
 function handlePaymentError(product, error) {
     console.error('Error en pago para producto:', product.name, error);
@@ -371,222 +347,12 @@ function recordPurchase(product, paymentDetails) {
     }
 }
 
-// Obtener productos de ejemplo para pagos
-function getExampleProductsForPayment() {
-    return [
-        {
-            id: 1,
-            name: 'Call of Duty: Modern Warfare III',
-            description: 'El shooter táctico más intenso del año',
-            price: 69.99,
-            category: 'Shooter / FPS'
-        },
-        {
-            id: 2,
-            name: 'The Legend of Zelda: Tears of the Kingdom',
-            description: 'Épica aventura de fantasía',
-            price: 59.99,
-            category: 'RPG / Fantasía'
-        },
-        {
-            id: 3,
-            name: 'EA Sports FC 24',
-            description: 'La experiencia futbolística más realista',
-            price: 49.99,
-            category: 'Deportes / Carreras'
-        },
-        {
-            id: 4,
-            name: 'Cities: Skylines II',
-            description: 'Construye y gestiona la ciudad de tus sueños',
-            price: 44.99,
-            category: 'Estrategia / Simulación'
-        },
-        {
-            id: 5,
-            name: 'Alan Wake 2',
-            description: 'Horror psicológico que combina realidad y pesadilla',
-            price: 59.99,
-            category: 'Terror / Suspenso'
-        },
-        {
-            id: 6,
-            name: 'Pizza Tower',
-            description: 'Plataformas indie lleno de creatividad',
-            price: 19.99,
-            category: 'Indie / Creativos'
-        },
-        {
-            id: 7,
-            name: 'Forza Horizon 5',
-            description: 'Carreras arcade en mundo abierto',
-            price: 39.99,
-            category: 'Deportes / Carreras'
-        },
-        {
-            id: 8,
-            name: 'Baldurs Gate 3',
-            description: 'RPG épico con decisiones que importan',
-            price: 59.99,
-            category: 'RPG / Fantasía'
-        },
-        {
-            id: 9,
-            name: 'Hades II',
-            description: 'Roguelike indie con combates fluidos',
-            price: 29.99,
-            category: 'Indie / Creativos'
-        },
-        {
-            id: 10,
-            name: 'Dead Space (2023)',
-            description: 'Remake del clásico horror espacial',
-            price: 49.99,
-            category: 'Terror / Suspenso'
-        },
-        // Productos específicos por categoría
-        {
-            id: 'fps1',
-            name: 'Counter-Strike 2',
-            description: 'El shooter táctico competitivo más jugado del mundo',
-            price: 0,
-            category: 'Shooter / FPS'
-        },
-        {
-            id: 'fps2',
-            name: 'Valorant',
-            description: 'Shooter táctico 5v5 con habilidades únicas',
-            price: 0,
-            category: 'Shooter / FPS'
-        },
-        {
-            id: 'fps3',
-            name: 'Overwatch 2',
-            description: 'Hero shooter dinámico con héroes únicos',
-            price: 0,
-            category: 'Shooter / FPS'
-        },
-        {
-            id: 'rpg1',
-            name: 'The Witcher 3: Wild Hunt',
-            description: 'RPG épico de mundo abierto',
-            price: 29.99,
-            category: 'RPG / Fantasía'
-        },
-        {
-            id: 'rpg2',
-            name: 'Elden Ring',
-            description: 'Obra maestra de FromSoftware',
-            price: 49.99,
-            category: 'RPG / Fantasía'
-        },
-        {
-            id: 'rpg3',
-            name: 'Skyrim Anniversary Edition',
-            description: 'El RPG definitivo con cientos de horas de aventura',
-            price: 39.99,
-            category: 'RPG / Fantasía'
-        },
-        {
-            id: 'sports1',
-            name: 'Gran Turismo 7',
-            description: 'Simulador de carreras definitivo',
-            price: 54.99,
-            category: 'Deportes / Carreras'
-        },
-        {
-            id: 'sports2',
-            name: 'NBA 2K24',
-            description: 'La experiencia de baloncesto más auténtica',
-            price: 44.99,
-            category: 'Deportes / Carreras'
-        },
-        {
-            id: 'sports3',
-            name: 'F1 23',
-            description: 'Vive la emoción de la Fórmula 1',
-            price: 49.99,
-            category: 'Deportes / Carreras'
-        },
-        {
-            id: 'strategy1',
-            name: 'Civilization VI',
-            description: 'Construye un imperio que resistirá la prueba del tiempo',
-            price: 34.99,
-            category: 'Estrategia / Simulación'
-        },
-        {
-            id: 'strategy2',
-            name: 'Anno 1800',
-            description: 'Construye ciudades prósperas durante la revolución industrial',
-            price: 39.99,
-            category: 'Estrategia / Simulación'
-        },
-        {
-            id: 'strategy3',
-            name: 'Total War: Rome II',
-            description: 'Conquista el mundo antiguo',
-            price: 29.99,
-            category: 'Estrategia / Simulación'
-        },
-        {
-            id: 'horror1',
-            name: 'Phasmophobia',
-            description: 'Investigación paranormal cooperativa',
-            price: 13.99,
-            category: 'Terror / Suspenso'
-        },
-        {
-            id: 'horror2',
-            name: 'The Dark Pictures: The Devil in Me',
-            description: 'Terror cinematográfico con decisiones críticas',
-            price: 39.99,
-            category: 'Terror / Suspenso'
-        },
-        {
-            id: 'horror3',
-            name: 'Outlast Trinity',
-            description: 'Trilogía completa del horror psicológico más intenso',
-            price: 24.99,
-            category: 'Terror / Suspenso'
-        },
-        {
-            id: 'indie1',
-            name: 'Hollow Knight',
-            description: 'Metroidvania indie con arte espectacular',
-            price: 14.99,
-            category: 'Indie / Creativos'
-        },
-        {
-            id: 'indie2',
-            name: 'Stardew Valley',
-            description: 'Simulación de granja relajante',
-            price: 12.99,
-            category: 'Indie / Creativos'
-        },
-        {
-            id: 'indie3',
-            name: 'Celeste',
-            description: 'Plataformas desafiante con historia emotiva',
-            price: 19.99,
-            category: 'Indie / Creativos'
-        }
-    ];
-}
-
 // Función para obtener historial de compras
 window.getPurchaseHistory = function() {
     return JSON.parse(sessionStorage.getItem('purchases') || '[]');
 };
 
 // Funciones auxiliares
-function closeModal() {
-    const modal = document.getElementById('productModal');
-    if (modal) {
-        modal.classList.remove('show');
-    }
-}
-
 function getCurrentUser() {
     const userStr = sessionStorage.getItem('user');
     return userStr ? JSON.parse(userStr) : { id: 'demo_user', username: 'Usuario Demo' };
