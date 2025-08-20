@@ -77,41 +77,96 @@ function showSimplePaymentForm(product, containerId) {
     `;
 }
 
-// Procesar pago rápido
+// Procesar pago rápido - VERSIÓN CORREGIDA
 window.processQuickPayment = function(event, productId) {
     event.preventDefault();
     
-    // Encontrar el producto por ID
+    console.log('🔍 Iniciando búsqueda de producto con ID:', productId, typeof productId);
+    
+    // Encontrar el producto por ID con búsqueda mejorada
     let product = null;
     
-    // Primero buscar en productsData global (si está disponible)
+    // Función helper para comparar IDs de forma robusta
+    const compareIds = (id1, id2) => {
+        // Convertir ambos a string para comparación consistente
+        return String(id1) === String(id2);
+    };
+    
+    // 1. Primero buscar en productsData global (productos de la base de datos)
     if (window.productsData && window.productsData.length > 0) {
-        product = window.productsData.find(p => p.id === productId || p.id === productId.toString());
+        console.log('🔍 Buscando en productsData (BD):', window.productsData.length, 'productos');
+        product = window.productsData.find(p => compareIds(p.id, productId));
+        if (product) {
+            console.log('✅ Producto encontrado en BD:', product.name, 'ID:', product.id);
+        }
     }
     
-    // Si no se encuentra, buscar en los productos de ejemplo
+    // 2. Si no se encuentra, buscar en currentCategoryProducts (productos de categoría actual)
+    if (!product && window.currentCategoryProducts && window.currentCategoryProducts.length > 0) {
+        console.log('🔍 Buscando en currentCategoryProducts:', window.currentCategoryProducts.length, 'productos');
+        product = window.currentCategoryProducts.find(p => compareIds(p.id, productId));
+        if (product) {
+            console.log('✅ Producto encontrado en categoría actual:', product.name, 'ID:', product.id);
+        }
+    }
+    
+    // 3. Como último recurso, buscar en productos de ejemplo (SOLO si no se encontró antes)
     if (!product) {
+        console.log('🔍 Buscando en productos de ejemplo...');
         const exampleProducts = getExampleProductsForPayment();
-        product = exampleProducts.find(p => p.id === productId || p.id === productId.toString());
+        product = exampleProducts.find(p => compareIds(p.id, productId));
+        if (product) {
+            console.log('✅ Producto encontrado en ejemplos:', product.name, 'ID:', product.id);
+        }
     }
     
-    // Si aún no se encuentra, crear un producto genérico
+    // 4. Si aún no se encuentra, crear un producto genérico con la información del modal actual
     if (!product) {
-        console.warn('Producto no encontrado, creando genérico');
-        product = {
-            id: productId,
-            name: 'Juego Desconocido',
-            price: 29.99,
-            category: 'Juego',
-            description: 'Producto no identificado'
-        };
+        console.warn('⚠️ Producto no encontrado, intentando extraer info del modal...');
+        
+        // Intentar obtener información del modal actual
+        const modal = document.getElementById('productModal');
+        const modalTitle = modal ? modal.querySelector('.modal-title')?.textContent : null;
+        const modalPrice = modal ? modal.querySelector('.modal-price')?.textContent : null;
+        const modalCategory = modal ? modal.querySelector('.modal-category')?.textContent : null;
+        
+        if (modalTitle) {
+            // Extraer precio del texto (ej: "$59.99 USD" -> 59.99)
+            let price = 29.99; // precio por defecto
+            if (modalPrice) {
+                const priceMatch = modalPrice.match(/\$(\d+\.?\d*)/);
+                if (priceMatch) {
+                    price = parseFloat(priceMatch[1]);
+                }
+            }
+            
+            product = {
+                id: productId,
+                name: modalTitle,
+                price: price,
+                category: modalCategory || 'Juego',
+                description: `Producto con ID: ${productId}`
+            };
+            
+            console.log('✅ Producto genérico creado desde modal:', product.name, 'Precio:', product.price);
+        } else {
+            // Crear producto completamente genérico
+            product = {
+                id: productId,
+                name: 'Producto Desconocido',
+                price: 29.99,
+                category: 'Juego',
+                description: `Producto no identificado con ID: ${productId}`
+            };
+            console.warn('⚠️ Producto genérico creado:', product);
+        }
     }
     
     const form = event.target;
     const submitBtn = form.querySelector('button[type="submit"]');
     const originalText = submitBtn.innerHTML;
     
-    console.log('Procesando pago para:', product.name, 'ID:', productId);
+    console.log('💳 Procesando pago para:', product.name, 'Precio:', product.price, 'ID original:', productId);
     
     // Mostrar estado de carga
     submitBtn.innerHTML = '<div class="loading" style="display: inline-block; width: 20px; height: 20px; margin-right: 10px;"></div> Procesando...';
@@ -129,10 +184,16 @@ window.processQuickPayment = function(event, productId) {
                 card: '**** **** **** 1234'
             };
             
-            console.log('Pago completado exitosamente:', mockPaymentDetails);
+            console.log('✅ Pago completado exitosamente:', mockPaymentDetails);
+            console.log('🎮 Producto procesado:', {
+                id: product.id,
+                name: product.name,
+                price: product.price
+            });
+            
             handlePaymentSuccess(product, mockPaymentDetails);
         } catch (error) {
-            console.error('Error procesando pago:', error);
+            console.error('❌ Error procesando pago:', error);
             // Restaurar botón en caso de error
             submitBtn.innerHTML = originalText;
             submitBtn.disabled = false;
