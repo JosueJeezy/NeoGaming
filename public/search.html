@@ -68,28 +68,21 @@
 
             <!-- Search Section -->
             <section class="search-section">
-                <h2 class="section-title">🔍 Buscar Lugares</h2>
+                <h2 class="section-title">🔍 Buscar Cualquier Lugar</h2>
                 <div class="search-container">
                     <input type="text" 
                            id="placeSearchInput" 
                            class="search-input" 
-                           placeholder="Busca lugares: restaurantes, cines, hospitales, tiendas..."
+                           placeholder="Busca cualquier cosa: cines, restaurantes, centros comerciales, bancos..."
                            autocomplete="off">
                     <button class="search-button" onclick="performSearch()" id="searchBtn">
                         🔍
                     </button>
                     <div id="searchSuggestions" class="search-suggestions"></div>
                 </div>
-                
-                <!-- Quick Search Buttons -->
-                <div class="quick-search" style="margin-top: 1rem; display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center;">
-                    <button onclick="quickSearch('restaurantes')" class="btn btn-secondary" style="font-size: 0.9rem; padding: 0.5rem 1rem;">🍽️ Restaurantes</button>
-                    <button onclick="quickSearch('hospitales')" class="btn btn-secondary" style="font-size: 0.9rem; padding: 0.5rem 1rem;">🏥 Hospitales</button>
-                    <button onclick="quickSearch('gasolineras')" class="btn btn-secondary" style="font-size: 0.9rem; padding: 0.5rem 1rem;">⛽ Gasolineras</button>
-                    <button onclick="quickSearch('supermercados')" class="btn btn-secondary" style="font-size: 0.9rem; padding: 0.5rem 1rem;">🛒 Supermercados</button>
-                    <button onclick="quickSearch('bancos')" class="btn btn-secondary" style="font-size: 0.9rem; padding: 0.5rem 1rem;">🏦 Bancos</button>
-                    <button onclick="quickSearch('farmacias')" class="btn btn-secondary" style="font-size: 0.9rem; padding: 0.5rem 1rem;">💊 Farmacias</button>
-                </div>
+                <p style="text-align: center; color: var(--text-gray); margin-top: 0.5rem; font-size: 0.9rem;">
+                    Escribe cualquier lugar y te mostraremos los más cercanos a tu ubicación
+                </p>
             </section>
 
             <!-- Map Section -->
@@ -100,9 +93,15 @@
                 </div>
             </section>
 
-            <!-- Results Section -->
+            <!-- Gaming Stores Section -->
+            <section class="stores-section">
+                <h2 class="section-title">🎮 Tiendas de Videojuegos Cercanas</h2>
+                <div id="gameStoresList" class="stores-grid"></div>
+            </section>
+
+            <!-- Search Results Section -->
             <section id="resultsSection" class="stores-section" style="display: none;">
-                <h2 class="section-title" id="resultsTitle">📍 Resultados</h2>
+                <h2 class="section-title" id="resultsTitle">📍 Resultados de Búsqueda</h2>
                 <div id="resultsList" class="stores-grid"></div>
             </section>
         </div>
