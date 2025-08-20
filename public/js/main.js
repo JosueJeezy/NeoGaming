@@ -30,9 +30,6 @@ async function initializeApp() {
     console.log('Página actual:', currentPage);
     
     if (protectedPages.includes(currentPage)) {
-        // Comentar la verificación de auth por ahora para testing
-        // if (!requireAuth()) return;
-        
         // Obtener usuario actual si existe
         currentUser = getCurrentUser();
         console.log('Usuario actual:', currentUser);
@@ -85,10 +82,7 @@ async function initializeHomePage() {
     console.log('Inicializando página de inicio...');
     
     try {
-        // Probar API primero
-        await testAPIOnLoad();
-        
-        // Cargar productos PRIMERO (más importante)
+        // Cargar productos de la base de datos OBLIGATORIAMENTE
         await loadProducts();
         
         // Solicitar geolocalización y mostrar clima (secundario)
@@ -101,12 +95,8 @@ async function initializeHomePage() {
         
     } catch (error) {
         console.error('Error inicializando página de inicio:', error);
-        // Asegurar que al menos se muestren productos de ejemplo
-        if (productsData.length === 0) {
-            console.log('Cargando productos de ejemplo como fallback...');
-            productsData = getExampleProducts();
-            displayProducts(productsData);
-        }
+        // Mostrar mensaje de error si no se pueden cargar productos de BD
+        showProductsError();
     }
 }
 
@@ -158,21 +148,13 @@ async function requestLocationAndWeather() {
     }
 }
 
-// Cargar productos desde la API
+// Cargar productos desde la API (SOLO BASE DE DATOS)
 async function loadProducts() {
-    console.log('Iniciando carga de productos...');
+    console.log('Iniciando carga de productos desde base de datos...');
     
     try {
-        console.log('Intentando cargar productos desde:', `${API_BASE_URL}/products`);
+        console.log('Cargando productos desde:', `${API_BASE_URL}/products`);
         
-        // Primero probar conectividad de la API
-        const apiAvailable = await testAPIConnection();
-        
-        if (!apiAvailable) {
-            throw new Error('API no disponible');
-        }
-        
-        // Cargar productos usando la nueva función apiRequest
         const response = await fetch(`${API_BASE_URL}/products`, {
             method: 'GET',
             headers: {
@@ -183,17 +165,36 @@ async function loadProducts() {
         
         if (response.ok) {
             productsData = await response.json();
-            console.log('✅ Productos cargados desde API:', productsData.length);
+            console.log('✅ Productos cargados desde base de datos:', productsData.length);
             displayProducts(productsData);
         } else {
-            throw new Error(`HTTP ${response.status}`);
+            throw new Error(`HTTP ${response.status} - No se pudieron cargar los productos`);
         }
     } catch (error) {
-        console.warn('⚠️ Error cargando productos desde API:', error.message);
-        console.log('📦 Usando productos de ejemplo como fallback');
-        productsData = getExampleProducts();
-        displayProducts(productsData);
+        console.error('❌ Error cargando productos desde base de datos:', error.message);
+        throw error; // Re-lanzar el error para que initializeHomePage lo capture
     }
+}
+
+// Mostrar error cuando no se pueden cargar productos
+function showProductsError() {
+    const productsGrid = document.getElementById('productsGrid');
+    if (!productsGrid) {
+        console.error('Elemento productsGrid no encontrado');
+        return;
+    }
+    
+    productsGrid.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--text-gray);">
+            <div style="font-size: 3rem; margin-bottom: 20px;">⚠️</div>
+            <h3>Error al cargar productos</h3>
+            <p>No se pudieron cargar los productos desde la base de datos.</p>
+            <p>Por favor, verifica la conexión con el servidor.</p>
+            <button onclick="location.reload()" class="btn btn-primary" style="margin-top: 20px;">
+                🔄 Intentar de nuevo
+            </button>
+        </div>
+    `;
 }
 
 // Mostrar productos en la página
@@ -215,9 +216,9 @@ function displayProducts(products) {
     if (productsToShow.length === 0) {
         productsGrid.innerHTML = `
             <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--text-gray);">
-                <div style="font-size: 3rem; margin-bottom: 20px;">🎮</div>
+                <div style="font-size: 3rem; margin-bottom: 20px;">📦</div>
                 <h3>No hay productos disponibles</h3>
-                <p>Intenta recargar la página</p>
+                <p>La base de datos está vacía</p>
             </div>
         `;
         return;
@@ -316,182 +317,19 @@ function closeModal() {
 function filterProductsByCategory(category) {
     console.log('Filtrando por categoría:', category);
     
-    // Obtener productos de la categoría
+    // Obtener productos de la categoría desde la base de datos
     let categoryProducts = productsData.filter(product => 
         product.category === category
     );
     
-    // Si no hay productos de esa categoría, generar productos específicos
+    // Si no hay productos de esa categoría en BD, mostrar mensaje
     if (categoryProducts.length === 0) {
-        categoryProducts = generateProductsForCategory(category);
+        showCategoryPage(category, []);
+        return;
     }
     
     // Mostrar página de categoría con máximo 3 productos
     showCategoryPage(category, categoryProducts.slice(0, 3));
-}
-
-// Generar productos específicos para cada categoría
-function generateProductsForCategory(category) {
-    const categoryGames = {
-        'Shooter / FPS': [
-            {
-                id: 'fps1',
-                name: 'Counter-Strike 2',
-                description: 'El shooter táctico competitivo más jugado del mundo con mecánicas renovadas y gráficos de nueva generación',
-                price: 0,
-                category: 'Shooter / FPS',
-                image_url: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/730/header.jpg'
-            },
-            {
-                id: 'fps2', 
-                name: 'Valorant',
-                description: 'Shooter táctico 5v5 con habilidades únicas que combina precisión y estrategia en cada ronda',
-                price: 0,
-                category: 'Shooter / FPS',
-                image_url: 'https://images.contentstack.io/v3/assets/blt731acb42bb3d1659/blt6fb8502c3555ad29/620b80369f9ede2e8f0f5bb6/VAL_Console_Announce_KeyArt_TextlessLogo_2560x1440_v001.jpg'
-            },
-            {
-                id: 'fps3',
-                name: 'Overwatch 2', 
-                description: 'Hero shooter dinámico con héroes únicos, combates 6v6 y modos de juego emocionantes',
-                price: 0,
-                category: 'Shooter / FPS',
-                image_url: 'https://images.blz-contentstack.com/v3/assets/blt2477dcaf4ebd440c/blt3b1678b7d3e8bee5/62e968b86dbb5b4d5cddc75e/OW2_SeasonOne_PressKit_FullLaunch_002.jpg'
-            }
-        ],
-        'RPG / Fantasía': [
-            {
-                id: 'rpg1',
-                name: 'The Witcher 3: Wild Hunt',
-                description: 'RPG épico de mundo abierto con decisiones que importan y batallas contra criaturas fantásticas',
-                price: 29.99,
-                category: 'RPG / Fantasía',
-                image_url: 'https://image.api.playstation.com/vulcan/img/rnd/202211/0711/kh4MrqLiYLE00AEbAuKBgbEt.png'
-            },
-            {
-                id: 'rpg2',
-                name: 'Elden Ring',
-                description: 'Obra maestra de FromSoftware que combina mundo abierto con combates desafiantes y lore profundo',
-                price: 49.99,
-                category: 'RPG / Fantasía', 
-                image_url: 'https://image.api.playstation.com/vulcan/ap/rnd/202110/2000/phvVT0qZfcRms5qDAk0SI3CM.png'
-            },
-            {
-                id: 'rpg3',
-                name: 'Skyrim Anniversary Edition',
-                description: 'El RPG definitivo con cientos de horas de aventura, mods y libertad total de exploración',
-                price: 39.99,
-                category: 'RPG / Fantasía',
-                image_url: 'https://image.api.playstation.com/vulcan/ap/rnd/202108/0410/0Jz6uJLxOK7JOMMfcfHFBi1D.png'
-            }
-        ],
-        'Deportes / Carreras': [
-            {
-                id: 'sports1',
-                name: 'Gran Turismo 7',
-                description: 'Simulador de carreras definitivo con más de 400 autos y circuitos icónicos del mundo',
-                price: 54.99,
-                category: 'Deportes / Carreras',
-                image_url: 'https://image.api.playstation.com/vulcan/ap/rnd/202111/1018/OFgROKqv2bBEP8vP7Qa3xqAj.png'
-            },
-            {
-                id: 'sports2',
-                name: 'NBA 2K24',
-                description: 'La experiencia de baloncesto más auténtica con modos MyCareer, MyTeam y juego online',
-                price: 44.99,
-                category: 'Deportes / Carreras',
-                image_url: 'https://image.api.playstation.com/vulcan/ap/rnd/202305/0920/1f8f6b6bc97dc1c8f6bcc69e2a53949df7e0bc55dca0b4e8.png'
-            },
-            {
-                id: 'sports3',
-                name: 'F1 23',
-                description: 'Vive la emoción de la Fórmula 1 con todos los circuitos oficiales y modo carrera inmersivo',
-                price: 49.99,
-                category: 'Deportes / Carreras',
-                image_url: 'https://image.api.playstation.com/vulcan/ap/rnd/202305/1611/f63cf6c5bb2566636708b1babfefa9479b8a2b8524d1e8d8.png'
-            }
-        ],
-        'Estrategia / Simulación': [
-            {
-                id: 'strategy1',
-                name: 'Civilization VI',
-                description: 'Construye un imperio que resistirá la prueba del tiempo en este clásico juego de estrategia por turnos',
-                price: 34.99,
-                category: 'Estrategia / Simulación',
-                image_url: 'https://image.api.playstation.com/vulcan/ap/rnd/202111/0822/cGq2uKYCRqbVwLKwO6b4qY65.png'
-            },
-            {
-                id: 'strategy2',
-                name: 'Anno 1800',
-                description: 'Construye ciudades prósperas durante la revolución industrial con comercio y diplomacia complejos',
-                price: 39.99,
-                category: 'Estrategia / Simulación',
-                image_url: 'https://image.api.playstation.com/vulcan/ap/rnd/202203/1500/wrKIqrrSXr0WgBQ6kS8P04gA.png'
-            },
-            {
-                id: 'strategy3',
-                name: 'Total War: Rome II',
-                description: 'Conquista el mundo antiguo combinando estrategia por turnos con batallas épicas en tiempo real',
-                price: 29.99,
-                category: 'Estrategia / Simulación',
-                image_url: 'https://cdn.cloudflare.steamstatic.com/steam/apps/214950/header.jpg'
-            }
-        ],
-        'Terror / Suspenso': [
-            {
-                id: 'horror1',
-                name: 'Phasmophobia',
-                description: 'Investigación paranormal cooperativa que te hará saltar del asiento con amigos',
-                price: 13.99,
-                category: 'Terror / Suspenso',
-                image_url: 'https://cdn.cloudflare.steamstatic.com/steam/apps/739630/header.jpg'
-            },
-            {
-                id: 'horror2',
-                name: 'The Dark Pictures: The Devil in Me',
-                description: 'Terror cinematográfico con decisiones que determinan quién vive y quién muere',
-                price: 39.99,
-                category: 'Terror / Suspenso',
-                image_url: 'https://image.api.playstation.com/vulcan/ap/rnd/202209/2917/eaZtI8EG6VLKLyYBSt9KEG52.png'
-            },
-            {
-                id: 'horror3',
-                name: 'Outlast Trinity',
-                description: 'Trilogía completa del horror psicológico más intenso sin posibilidad de defenderte',
-                price: 24.99,
-                category: 'Terror / Suspenso',
-                image_url: 'https://image.api.playstation.com/vulcan/ap/rnd/202104/0517/XMmZH6HlTw0V3KMT8M0CjY1O.png'
-            }
-        ],
-        'Indie / Creativos': [
-            {
-                id: 'indie1',
-                name: 'Hollow Knight',
-                description: 'Metroidvania indie con arte espectacular, combates precisos y mundo interconectado',
-                price: 14.99,
-                category: 'Indie / Creativos',
-                image_url: 'https://image.api.playstation.com/vulcan/ap/rnd/202111/0711/0DPn2ZMNEgLWqMbv9qjgdz7n.png'
-            },
-            {
-                id: 'indie2',
-                name: 'Stardew Valley',
-                description: 'Simulación de granja relajante con elementos de RPG, crafting y relaciones sociales',
-                price: 12.99,
-                category: 'Indie / Creativos',
-                image_url: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/413150/header.jpg'
-            },
-            {
-                id: 'indie3',
-                name: 'Celeste',
-                description: 'Plataformas desafiante con una historia emotiva sobre salud mental y superación personal',
-                price: 19.99,
-                category: 'Indie / Creativos',
-                image_url: 'https://image.api.playstation.com/vulcan/ap/rnd/202111/0711/LCaG7AaQsKdHXKEKlKfHLlr9.png'
-            }
-        ]
-    };
-    
-    return categoryGames[category] || [];
 }
 
 // Mostrar página dinámica de categoría
@@ -523,14 +361,17 @@ function showCategoryPage(category, products) {
                 </p>
                 <div style="margin-top: 20px; color: var(--text-light);">
                     <span style="background: var(--primary-color); padding: 5px 15px; border-radius: 20px; font-size: 0.9rem;">
-                        ${products.length} juegos seleccionados
+                        ${products.length} juegos disponibles
                     </span>
                 </div>
             </div>
             
             <!-- Productos de la categoría -->
             <div class="category-products" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-bottom: 50px;">
-                ${products.map(product => createCategoryProductCard(product)).join('')}
+                ${products.length > 0 ? 
+                    products.map(product => createCategoryProductCard(product)).join('') : 
+                    '<div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--text-gray);"><h3>No hay productos disponibles en esta categoría</h3></div>'
+                }
             </div>
             
             <!-- Call to action -->
@@ -565,7 +406,7 @@ function showCategoryPage(category, products) {
     console.log(`Página de categoría "${category}" mostrada con ${products.length} productos`);
 }
 
-// Crear tarjeta de producto para página de categoría (CORREGIDA)
+// Crear tarjeta de producto para página de categoría
 function createCategoryProductCard(product) {
     const price = parseFloat(product.price) || 0;
     const priceText = price === 0 ? 'Gratis' : `$${price.toFixed(2)} USD`;
@@ -641,8 +482,8 @@ function getCategoryIcon(category) {
     const icons = {
         'Shooter / FPS': '🔫',
         'RPG / Fantasía': '⚔️',
-        'Deportes / Carreras': '🏎️',
-        'Estrategia / Simulación': '🏗️',
+        'Deportes / Carreras': '🎯',
+        'Estrategia / Simulación': '🗺️',
         'Terror / Suspenso': '👻',
         'Indie / Creativos': '🎨'
     };
@@ -710,92 +551,6 @@ function showAllProducts() {
     }, 300);
 }
 
-// Productos de ejemplo en caso de que la API no esté disponible
-function getExampleProducts() {
-    return [
-        {
-            id: 1,
-            name: 'Call of Duty: Modern Warfare III',
-            description: 'El shooter táctico más intenso del año con gráficos de última generación y combates multijugador épicos',
-            price: 69.99,
-            category: 'Shooter / FPS',
-            image_url: 'https://image.api.playstation.com/vulcan/ap/rnd/202310/0410/c90521de8a000b1b68e0b20237ba88fe8e49cfc3a3ac2f58.png'
-        },
-        {
-            id: 2,
-            name: 'The Legend of Zelda: Tears of the Kingdom',
-            description: 'Épica aventura de fantasía con un mundo abierto masivo lleno de secretos por descubrir',
-            price: 59.99,
-            category: 'RPG / Fantasía',
-            image_url: 'https://assets.nintendo.com/image/upload/c_fill,w_1200/q_auto:best/f_auto/dpr_2.0/ncom/software/switch/70010000063714/58fa8e90b0ee4b894b2e21ac97b59a84f1e1d3d8a8c59ea2acf5b9b89a3cac5a'
-        },
-        {
-            id: 3,
-            name: 'EA Sports FC 24',
-            description: 'La experiencia futbolística más realista con mecánicas mejoradas y modos de juego innovadores',
-            price: 49.99,
-            category: 'Deportes / Carreras',
-            image_url: 'https://image.api.playstation.com/vulcan/ap/rnd/202305/1210/1684a4434e5ceb5c10db17bc7ac32862a59b0e4dcdd46b3a.jpg'
-        },
-        {
-            id: 4,
-            name: 'Cities: Skylines II',
-            description: 'Construye y gestiona la ciudad de tus sueños con herramientas de simulación avanzadas',
-            price: 44.99,
-            category: 'Estrategia / Simulación',
-            image_url: 'https://image.api.playstation.com/vulcan/ap/rnd/202306/1219/48c673a6b90e3e5bd6e1fcc0606dcba40ad43b3b69f5a2f6.png'
-        },
-        {
-            id: 5,
-            name: 'Alan Wake 2',
-            description: 'Horror psicológico que combina realidad y pesadilla en una experiencia única y aterrorizante',
-            price: 59.99,
-            category: 'Terror / Suspenso',
-            image_url: 'https://image.api.playstation.com/vulcan/ap/rnd/202305/1719/caedc8ceb709d0b2e2b71549be9b6cff2e95bbff59e92f3e.png'
-        },
-        {
-            id: 6,
-            name: 'Pizza Tower',
-            description: 'Plataformas indie lleno de creatividad, humor y mecánicas innovadoras que te sorprenderán',
-            price: 19.99,
-            category: 'Indie / Creativos',
-            image_url: 'https://image.api.playstation.com/vulcan/ap/rnd/202212/1315/2nXUeKVLNFMqYTfRQrCfHRMh.png'
-        },
-        {
-            id: 7,
-            name: 'Forza Horizon 5',
-            description: 'Carreras arcade en mundo abierto con los autos más espectaculares en paisajes de México',
-            price: 39.99,
-            category: 'Deportes / Carreras',
-            image_url: 'https://compass-ssl.xbox.com/assets/d2/90/d2909e95-6f74-46c2-baa6-6d34a4d9a8a8.jpg'
-        },
-        {
-            id: 8,
-            name: 'Baldurs Gate 3',
-            description: 'RPG épico con decisiones que importan, combates tácticos y una historia inolvidable',
-            price: 59.99,
-            category: 'RPG / Fantasía',
-            image_url: 'https://image.api.playstation.com/vulcan/ap/rnd/202302/2321/ba706e54d68d10a0334529312681f8991d1dd9bf6fd46231.png'
-        },
-        {
-            id: 9,
-            name: 'Hades II',
-            description: 'Roguelike indie con combates fluidos, arte espectacular y narrativa mitológica envolvente',
-            price: 29.99,
-            category: 'Indie / Creativos',
-            image_url: 'https://cdn.cloudflare.steamstatic.com/steam/apps/1145350/header.jpg'
-        },
-        {
-            id: 10,
-            name: 'Dead Space (2023)',
-            description: 'Remake del clásico horror espacial con gráficos renovados y terror más intenso que nunca',
-            price: 49.99,
-            category: 'Terror / Suspenso',
-            image_url: 'https://image.api.playstation.com/vulcan/ap/rnd/202208/1017/RoVYjLkdKqzWQ6Q8AIrAxM6O.png'
-        }
-    ];
-}
-
 // Función para obtener usuario actual
 function getCurrentUser() {
     const userStr = sessionStorage.getItem('user');
@@ -850,20 +605,6 @@ if (document.readyState === 'loading') {
     handleScrollAnimations();
 }
 
-// Función para probar la API cuando la página carga
-async function testAPIOnLoad() {
-    console.log('🔍 Probando conectividad API al cargar...');
-    const apiWorking = await testAPIConnection();
-    
-    if (apiWorking) {
-        console.log('✅ API funcionando correctamente');
-    } else {
-        console.warn('⚠️ API no disponible, usando modo offline');
-    }
-    
-    return apiWorking;
-}
-
 // Funciones para debugging
 window.debugProducts = function() {
     console.log('=== DEBUG PRODUCTOS ===');
@@ -873,26 +614,9 @@ window.debugProducts = function() {
     console.log('======================');
 };
 
-window.debugCategories = function() {
-    console.log('=== DEBUG CATEGORÍAS ===');
-    
-    const categories = ['Shooter / FPS', 'RPG / Fantasía', 'Deportes / Carreras', 'Estrategia / Simulación', 'Terror / Suspenso', 'Indie / Creativos'];
-    
-    categories.forEach(category => {
-        console.log(`\n--- ${category} ---`);
-        const products = generateProductsForCategory(category);
-        console.log(`Productos generados: ${products.length}`);
-        products.forEach((product, index) => {
-            console.log(`  ${index + 1}. ${product.name} - ${product.price}`);
-        });
-    });
-    
-    console.log('\n======================');
-};
-
 window.testCategory = function(category) {
     console.log(`Probando categoría: ${category}`);
-    const products = generateProductsForCategory(category);
+    const products = productsData.filter(p => p.category === category);
     console.log('Productos:', products);
     filterProductsByCategory(category);
 };
