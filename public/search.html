@@ -7,6 +7,133 @@
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
+    <style>
+        .search-result-marker {
+            background: #ff4444;
+            color: white;
+            border: 2px solid white;
+            border-radius: 50%;
+            width: 30px !important;
+            height: 30px !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        
+        .search-result-popup {
+            min-width: 200px;
+        }
+        
+        .search-result-popup h4 {
+            color: #ff4444;
+            margin: 0 0 8px 0;
+            font-size: 1.1rem;
+        }
+        
+        .search-result-popup .info {
+            margin: 5px 0;
+            font-size: 0.9rem;
+        }
+        
+        .search-result-popup .rating {
+            color: #ffa500;
+            margin: 5px 0;
+        }
+        
+        .search-results-section {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: var(--card-bg);
+            border-radius: 15px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .search-results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .search-result-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1rem;
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.5s ease forwards;
+        }
+        
+        .search-result-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.1);
+            border-color: var(--primary-color);
+        }
+        
+        .search-result-name {
+            color: var(--primary-color);
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .search-result-address {
+            color: var(--text-gray);
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .search-result-distance {
+            color: var(--accent-color);
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .search-result-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .search-input-container {
+            position: relative;
+        }
+        
+        .search-clear-btn {
+            position: absolute;
+            right: 50px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-gray);
+            cursor: pointer;
+            padding: 5px;
+            font-size: 18px;
+            display: none;
+        }
+        
+        .search-clear-btn:hover {
+            color: var(--text-light);
+        }
+    </style>
 </head>
 <body>
     <!-- Location Permission Modal -->
@@ -49,40 +176,66 @@
             <!-- Hero Section -->
             <section class="hero fade-in">
                 <h1 class="hero-title">🗺️ Explorar Ubicaciones</h1>
-                <p class="hero-subtitle">Encuentra lugares cerca de ti</p>
+                <p class="hero-subtitle">Encuentra cualquier lugar cerca de ti</p>
                 
                 <div class="landing-buttons">
-                    <button onclick="requestLocationManually()" class="btn btn-primary" id="locationBtn">
+                    <button onclick="findNearbyStores()" class="btn btn-primary" id="findStoresBtn">
+                        🎯 Buscar Tiendas Cercanas
+                    </button>
+                    <button onclick="requestLocationManually()" class="btn btn-secondary" id="locationBtn">
                         📍 Mi Ubicación
                     </button>
                 </div>
             </section>
 
             <!-- Status Messages -->
-            <div id="statusMessage" class="status-message"></div>
+            <div id="statusMessage" class="status-message">
+                <!-- Status messages will appear here -->
+            </div>
 
             <!-- Location Info -->
             <section id="locationInfo" class="location-info">
-                <div id="locationContent"></div>
+                <div id="locationContent">
+                    <!-- Location content will be populated here -->
+                </div>
             </section>
 
             <!-- Search Section -->
             <section class="search-section">
                 <h2 class="section-title">🔍 Buscar Cualquier Lugar</h2>
                 <div class="search-container">
-                    <input type="text" 
-                           id="placeSearchInput" 
-                           class="search-input" 
-                           placeholder="Busca cualquier cosa: cines, restaurantes, centros comerciales, bancos..."
-                           autocomplete="off">
-                    <button class="search-button" onclick="performSearch()" id="searchBtn">
-                        🔍
-                    </button>
-                    <div id="searchSuggestions" class="search-suggestions"></div>
+                    <div class="search-input-container">
+                        <input type="text" 
+                               id="placeSearchInput" 
+                               class="search-input" 
+                               placeholder="Busca cualquier lugar: cines, restaurantes, hospitales, gasolineras, bancos..."
+                               autocomplete="off">
+                        <button class="search-clear-btn" id="searchClearBtn" onclick="clearSearch()">
+                            ×
+                        </button>
+                        <button class="search-button" onclick="performSearch()" id="searchBtn">
+                            🔍
+                        </button>
+                    </div>
+                    <div id="searchSuggestions" class="search-suggestions">
+                        <!-- Search suggestions will appear here -->
+                    </div>
                 </div>
-                <p style="text-align: center; color: var(--text-gray); margin-top: 0.5rem; font-size: 0.9rem;">
-                    Escribe cualquier lugar y te mostraremos los más cercanos a tu ubicación
-                </p>
+                
+                <!-- Popular searches -->
+                <div style="margin-top: 1rem;">
+                    <p style="color: var(--text-gray); margin-bottom: 0.5rem; font-size: 0.9rem;">Búsquedas populares:</p>
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                        <button onclick="quickSearch('cines')" class="btn btn-outline-small">🎬 Cines</button>
+                        <button onclick="quickSearch('restaurantes')" class="btn btn-outline-small">🍽️ Restaurantes</button>
+                        <button onclick="quickSearch('hospitales')" class="btn btn-outline-small">🏥 Hospitales</button>
+                        <button onclick="quickSearch('farmacias')" class="btn btn-outline-small">💊 Farmacias</button>
+                        <button onclick="quickSearch('bancos')" class="btn btn-outline-small">🏦 Bancos</button>
+                        <button onclick="quickSearch('gasolineras')" class="btn btn-outline-small">⛽ Gasolineras</button>
+                        <button onclick="quickSearch('supermercados')" class="btn btn-outline-small">🛒 Supermercados</button>
+                        <button onclick="quickSearch('hoteles')" class="btn btn-outline-small">🏨 Hoteles</button>
+                    </div>
+                </div>
             </section>
 
             <!-- Map Section -->
@@ -93,16 +246,20 @@
                 </div>
             </section>
 
-            <!-- Gaming Stores Section -->
-            <section class="stores-section">
-                <h2 class="section-title">🎮 Tiendas de Videojuegos Cercanas</h2>
-                <div id="gameStoresList" class="stores-grid"></div>
+            <!-- Search Results Section -->
+            <section id="searchResultsSection" class="search-results-section" style="display: none;">
+                <h2 class="section-title" id="searchResultsTitle">📍 Resultados de Búsqueda</h2>
+                <div id="searchResultsList" class="search-results-grid">
+                    <!-- Search results will be populated here -->
+                </div>
             </section>
 
-            <!-- Search Results Section -->
-            <section id="resultsSection" class="stores-section" style="display: none;">
-                <h2 class="section-title" id="resultsTitle">📍 Resultados de Búsqueda</h2>
-                <div id="resultsList" class="stores-grid"></div>
+            <!-- Gaming Stores Section -->
+            <section id="storesSection" class="stores-section">
+                <h2 class="section-title">🎮 Tiendas de Videojuegos</h2>
+                <div id="storesList" class="stores-grid">
+                    <!-- Gaming stores will be populated here -->
+                </div>
             </section>
         </div>
     </main>
