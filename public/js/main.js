@@ -210,7 +210,7 @@ function displayProducts(products) {
     productsGrid.innerHTML = '';
     
     // Mostrar solo los primeros 8 productos en la página home
-    const productsToShow = products.slice(0, 8);
+    const productsToShow = products.slice(0, 12);
     console.log('Productos a mostrar:', productsToShow.length);
     
     if (productsToShow.length === 0) {
