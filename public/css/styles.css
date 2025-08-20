@@ -450,6 +450,14 @@ body {
     font-weight: bold;
 }
 
+.category-card:hover .category-title,
+.category-card:hover .category-description,
+.category-card:hover .category-icon,
+.category-card:hover .category-count {
+    color: var(--text-gray); 
+    transition: color 0.3s ease; 
+}
+
 /* Sección de productos */
 .products-section {
     margin-bottom: 60px;
